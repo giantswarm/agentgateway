@@ -1,0 +1,35 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.12.0
+directories:
+# Upstream agentgateway controller chart, vendored as a subchart of
+# helm/agentgateway. This is the kgateway-based agentgateway control plane
+# (controller + data-plane proxy); it ships NO CRDs of its own — those are
+# vendored separately into helm/agentgateway/crds/ below so the app owns them.
+- path: helm/agentgateway/charts/agentgateway
+  contents:
+  - path: .
+    helmChart:
+      name: agentgateway
+      version: "1.3.0"
+      repository:
+        url: oci://cr.agentgateway.dev/charts
+# CRDs (AgentgatewayBackend / AgentgatewayPolicy / AgentgatewayParameters).
+# Upstream ships them in a separate agentgateway-crds chart (as pristine CRD
+# manifests under templates/). We vendor only those manifests into the app
+# chart's crds/ dir (app-owned CRDs). `make sync` then injects
+# helm.sh/resource-policy: keep into each via a committed post-sync step — the
+# crds/ dir is applied by Flux with `crds: CreateReplace`, and the keep
+# annotation stops a later `helm uninstall`/prune from cascade-deleting every
+# agentgateway CR cluster-wide.
+- path: helm/agentgateway/crds
+  contents:
+  - path: .
+    helmChart:
+      name: agentgateway-crds
+      version: "v1.3.0"
+      repository:
+        url: oci://cr.agentgateway.dev/charts
+    includePaths:
+    - templates/agentgateway.dev_*.yaml
+    newRootPath: templates

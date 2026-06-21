@@ -1,0 +1,15 @@
+# app-test-suite configuration.
+#
+# Smoke/functional/upgrade test execution is skipped in CI for now: a real run
+# deploys the chart on a kind cluster and additionally requires the Gateway API
+# CRDs + a GatewayClass for the agentgateway controller to become healthy, which
+# the bare app-test-suite kind cluster does not provide. The gsoci-mirrored
+# controller/proxy images themselves are available. The smoke test under
+# tests/ats is ready; remove the matching entries from skip-steps once the kind
+# fixture provisions the Gateway API prerequisites. Same approach as
+# giantswarm/agent-sandbox.
+smoke-tests-cluster-type: kind
+upgrade-tests-cluster-type: kind
+# @TODO: enable ATS tests by removing the matching entries from skip-steps once
+# the kind fixture installs the Gateway API CRDs + GatewayClass the controller needs.
+skip-steps: [smoke,functional,upgrade]

@@ -1,0 +1,3 @@
+# The upstream chart under helm/agentgateway/charts/ is vendored by vendir.
+# Keep its README pristine — helm-docs must not regenerate it.
+helm/agentgateway/charts

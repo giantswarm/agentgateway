@@ -1,0 +1,53 @@
+# Values for the vendored upstream agentgateway controller chart. The upstream
+# chart is a subchart under charts/agentgateway (managed by vendir, pinned in
+# vendir.lock.yml). Subchart values are namespaced under its chart name.
+#
+# Defaults below repoint the controller + data-plane images at the Giant Swarm
+# gsoci mirror and apply restricted-PSS security contexts, so the chart installs
+# on Giant Swarm clusters out of the box. The agentgateway.dev CRDs ship in this
+# chart's crds/ dir (app-owned); Helm never upgrades crds/-dir CRDs, so consumers
+# apply this chart with Flux `crds: CreateReplace`.
+agentgateway:  # @schema additionalProperties: true
+  # Default image registry/tag for the controller. gsoci-mirrored via retagger.
+  # additionalProperties: the vendored subchart contributes more keys to this
+  # object (e.g. pullPolicy) than we override here.
+  image:  # @schema additionalProperties: true
+    registry: gsoci.azurecr.io
+    tag: v1.2.1
+  # additionalProperties: the upstream controller block has a large surface
+  # (service, xds, autoscalers, ...) we deliberately leave at upstream defaults.
+  controller:  # @schema additionalProperties: true
+    image:  # @schema additionalProperties: true
+      # retagger publishes with override_repo_name, so the path is flat
+      # (giantswarm/agentgateway-controller), not the upstream hierarchy.
+      repository: giantswarm/agentgateway-controller
+  # Data-plane proxy image. Tracks the chart appVersion (v1.3.0).
+  proxy:
+    image:
+      registry: gsoci.azurecr.io
+      repository: giantswarm/agentgateway
+      tag: v1.3.0
+  # additionalProperties: merged with the subchart's own podAnnotations
+  # (e.g. prometheus.io/scrape).
+  podAnnotations:  # @schema additionalProperties: true
+    application.giantswarm.io/team: bumblebee
+  # Restricted-PSS compliant — required by Kyverno on Giant Swarm clusters.
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop: [ALL]
+    seccompProfile:
+      type: RuntimeDefault
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

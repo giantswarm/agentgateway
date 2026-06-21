@@ -1,0 +1,15 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - helmChart:
+      appVersion: 1.3.0
+      version: 1.3.0
+    path: .
+  path: helm/agentgateway/charts/agentgateway
+- contents:
+  - helmChart:
+      appVersion: v1.3.0
+      version: v1.3.0
+    path: .
+  path: helm/agentgateway/crds
+kind: LockConfig

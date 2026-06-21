@@ -1,68 +1,52 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/{APP-NAME}/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/{APP-NAME}/tree/main)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/giantswarm/{APP-NAME}/badge)](https://securityscorecards.dev/viewer/?uri=github.com/giantswarm/{APP-NAME})
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/agentgateway/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/agentgateway/tree/main)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/giantswarm/agentgateway/badge)](https://securityscorecards.dev/viewer/?uri=github.com/giantswarm/agentgateway)
 
-[Guide about how to manage an app on Giant Swarm](https://handbook.giantswarm.io/docs/dev-and-releng/app-developer-processes/adding_app_to_appcatalog/)
+# agentgateway
 
-# {APP-NAME} chart
+Giant Swarm packaging of the upstream [agentgateway](https://agentgateway.dev)
+controller — the kgateway-based control plane plus data-plane proxy that fronts
+MCP and agent traffic on the Giant Swarm agentic platform.
 
-Giant Swarm offers a {APP-NAME} App which can be installed in workload clusters.
-Here, we define the {APP-NAME} chart with its templates and default configuration.
+This is a **vendored chart repo**: the upstream chart is pulled verbatim by
+`vendir` and re-published, unmodified except for Giant Swarm defaults, to the
+Giant Swarm app catalog (`gsoci.azurecr.io/charts/giantswarm`).
 
-**What is this app?**
+## Layout
 
-**Why did we add it?**
+| Path | Contents |
+|---|---|
+| `helm/agentgateway/` | Wrapper chart. Adds Giant Swarm defaults (gsoci-mirrored images, restricted-PSS security contexts) on top of the vendored upstream chart. |
+| `helm/agentgateway/charts/agentgateway/` | Upstream controller chart, vendored by `vendir` (pinned in `vendir.lock.yml`). Do not edit by hand — run `make sync`. |
+| `helm/agentgateway/crds/` | The `agentgateway.dev` CRDs (`AgentgatewayBackend`, `AgentgatewayPolicy`, `AgentgatewayParameters`), vendored from the upstream `agentgateway-crds` chart. |
 
-**Who can use it?**
+## App-owned CRDs
 
-## Installing
+The controller chart ships **no** CRDs. They live in this chart's `crds/`
+directory, making agentgateway an **app-owned-CRDs** component: it owns its CRD
+version and ships them alongside the app instead of via a separate CRD bundle.
 
-There are several ways to install this app onto a workload cluster.
+Two consequences follow:
 
-- [Using GitOps to instantiate the App](https://docs.giantswarm.io/tutorials/continuous-deployment/apps/add-appcr/)
-- By creating an [App resource](https://docs.giantswarm.io/reference/platform-api/crd/apps.application.giantswarm.io) using the platform API as explained in [Getting started with App Platform](https://docs.giantswarm.io/tutorials/fleet-management/app-platform/).
+- Helm never upgrades `crds/`-dir CRDs on its own. The Giant Swarm agentic
+  platform meta-package therefore applies this chart with Flux
+  `crds: CreateReplace`, which replaces the live CRDs atomically on every
+  release.
+- The `AgentgatewayBackend` (~919 KB) and `AgentgatewayPolicy` (~645 KB) CRDs
+  exceed the 256 KB client-side-apply limit, so server-side replace
+  (`CreateReplace`) is the only viable delivery path.
 
-## Configuring
+Each vendored CRD carries `helm.sh/resource-policy: keep` (injected by
+`make sync`). The annotation stops a `helm uninstall`/prune from
+cascade-deleting every agentgateway custom resource in the cluster.
 
-### values.yaml
+## Updating the upstream chart
 
-**This is an example of a values file you could upload using our web interface.**
-
-```yaml
-# values.yaml
-
+```bash
+make sync
 ```
 
-### Sample App CR and ConfigMap for the management cluster
-
-If you have access to the Kubernetes API on the management cluster, you could create the App CR and ConfigMap directly.
-
-Here is an example that would install the app to workload cluster `abc12`:
-
-```yaml
-# appCR.yaml
-
-```
-
-```yaml
-# user-values-configmap.yaml
-
-```
-
-See our [full reference on how to configure apps](https://docs.giantswarm.io/tutorials/fleet-management/app-platform/app-configuration/) for more details.
-
-## Compatibility
-
-This app has been tested to work with the following workload cluster release versions:
-
-- _add release version_
-
-## Limitations
-
-Some apps have restrictions on how they can be deployed.
-Not following these limitations will most likely result in a broken deployment.
-
-- _add limitation_
-
-## Credit
-
-- {APP HELM REPOSITORY}
+This runs `vendir sync` (re-vendors the controller chart and CRDs at the
+versions pinned in `vendir.lock.yml`) and re-injects the
+`helm.sh/resource-policy: keep` annotation into each CRD. Bump the pinned
+versions in `vendir.yml`, run `make sync`, then `cd helm/agentgateway &&
+helm dependency update` to refresh `Chart.lock`.
