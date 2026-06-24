@@ -26,7 +26,7 @@ agentgateway:  # @schema additionalProperties: true
     image:
       registry: gsoci.azurecr.io
       repository: giantswarm/agentgateway
-      tag: v1.3.0
+      tag: v1.3.1
   # additionalProperties: merged with the subchart's own podAnnotations
   # (e.g. prometheus.io/scrape).
   podAnnotations:  # @schema additionalProperties: true
