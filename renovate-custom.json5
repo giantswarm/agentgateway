@@ -1,0 +1,20 @@
+// Repo-specific Renovate rules. Added as the last `extends` entry of the
+// generated renovate.json5 and never touched by devctl align-files.
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  packageRules: [
+    {
+      // The standalone agentgateway product is on the v1.x line
+      // (cr.agentgateway.dev/charts/agentgateway, tracking
+      // github.com/agentgateway/agentgateway releases, latest v1.3.1).
+      // The v2.x tags in the same OCI repo are the deprecated kgateway-based
+      // control plane, a different product. Renovate sees 2.2.1 > 1.3.1 and
+      // would bump across products, so cap this app at < 2.0.0.
+      matchPackageNames: [
+        'cr.agentgateway.dev/charts/agentgateway',
+        'cr.agentgateway.dev/charts/agentgateway-crds',
+      ],
+      allowedVersions: '< 2.0.0',
+    },
+  ],
+}
