@@ -25,9 +25,6 @@
                     "properties": {
                         "registry": {
                             "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
                         }
                     },
                     "additionalProperties": true
@@ -51,27 +48,6 @@
                             "type": "object",
                             "properties": {
                                 "type": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false
-                },
-                "proxy": {
-                    "type": "object",
-                    "properties": {
-                        "image": {
-                            "type": "object",
-                            "properties": {
-                                "registry": {
-                                    "type": "string"
-                                },
-                                "repository": {
-                                    "type": "string"
-                                },
-                                "tag": {
                                     "type": "string"
                                 }
                             },
