@@ -13,7 +13,7 @@ agentgateway:  # @schema additionalProperties: true
   # object (e.g. pullPolicy) than we override here.
   image:  # @schema additionalProperties: true
     registry: gsoci.azurecr.io
-    tag: v1.2.1
+    tag: v1.3.1
   # additionalProperties: the upstream controller block has a large surface
   # (service, xds, autoscalers, ...) we deliberately leave at upstream defaults.
   controller:  # @schema additionalProperties: true

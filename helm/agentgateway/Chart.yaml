@@ -36,4 +36,4 @@ dependencies:
   # no CRDs — those live in this chart's crds/ dir (app-owned CRDs).
   - name: agentgateway
     repository: file://charts/agentgateway
-    version: 1.3.0
+    version: v1.3.1

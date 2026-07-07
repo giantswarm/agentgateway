@@ -1,6 +1,6 @@
 dependencies:
 - name: agentgateway
   repository: file://charts/agentgateway
-  version: 1.3.0
-digest: sha256:e242ff5887d18d0660cadcb95e769d27b61297b70b74bdd6cb648e4fc3064b99
-generated: "2026-06-21T17:08:59.060639723+02:00"
+  version: v1.3.1
+digest: sha256:2da1003e43bf3de41a199d20ba22950665f32f0d3ec7772e98ba88d97c45bb24
+generated: "2026-07-07T19:11:24.162512364+02:00"

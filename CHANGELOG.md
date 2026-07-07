@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - reverted: rolled back the migration to agentgateway `v2.2.1`; the vendored chart and CRDs are back on the `v1.3.1` line. The `v2.x` tags in `cr.agentgateway.dev/charts` are the deprecated kgateway-based control plane, a different product from the standalone agentgateway this app packages.
 - added: `renovate-custom.json5` capping `cr.agentgateway.dev/charts/agentgateway` and `agentgateway-crds` at `< 2.0.0` so Renovate no longer bumps across into the `v2.x` (kgateway) line.
+- fixed: aligned the parent chart on `v1.3.1`. The `file://` subchart dependency version, `Chart.lock` and packaged tarball now match the vendored subchart (`v1.3.1`), and the controller `image.tag` was moved off the stale `v1.2.1` pin to `v1.3.1`.
 - changed: `app.giantswarm.io` label group was changed to `application.giantswarm.io`
 
 [Unreleased]: https://github.com/giantswarm/agentgateway/tree/main
