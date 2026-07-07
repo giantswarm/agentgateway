@@ -94,3 +94,4 @@ Otherwise (e.g., "latest", "dev"), return it unchanged.
 {{- $tag -}}
 {{- end -}}
 {{- end }}
+
