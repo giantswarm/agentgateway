@@ -4,7 +4,7 @@
 apiVersion: v2
 
 # Version of the packaged app (upstream agentgateway controller release).
-appVersion: 1.3.0
+appVersion: 2.2.1
 
 # Make sure your name DOES NOT end in "app" or "-app".
 name: agentgateway
@@ -36,4 +36,4 @@ dependencies:
   # no CRDs — those live in this chart's crds/ dir (app-owned CRDs).
   - name: agentgateway
     repository: file://charts/agentgateway
-    version: 1.3.0
+    version: v2.2.1
