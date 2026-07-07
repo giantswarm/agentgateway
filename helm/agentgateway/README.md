@@ -13,14 +13,18 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://charts/agentgateway | agentgateway | v2.2.1 |
+| file://charts/agentgateway | agentgateway | 1.3.0 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | agentgateway.image.registry | string | `"gsoci.azurecr.io"` |  |
+| agentgateway.image.tag | string | `"v1.2.1"` |  |
 | agentgateway.controller.image.repository | string | `"giantswarm/agentgateway-controller"` |  |
+| agentgateway.proxy.image.registry | string | `"gsoci.azurecr.io"` |  |
+| agentgateway.proxy.image.repository | string | `"giantswarm/agentgateway"` |  |
+| agentgateway.proxy.image.tag | string | `"v1.3.1"` |  |
 | agentgateway.podAnnotations."application.giantswarm.io/team" | string | `"bumblebee"` |  |
 | agentgateway.podSecurityContext.runAsNonRoot | bool | `true` |  |
 | agentgateway.podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |

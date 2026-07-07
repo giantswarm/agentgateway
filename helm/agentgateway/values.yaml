@@ -2,54 +2,31 @@
 # chart is a subchart under charts/agentgateway (managed by vendir, pinned in
 # vendir.lock.yml). Subchart values are namespaced under its chart name.
 #
-# As of v2 the upstream chart is the kgateway-based control plane: it ships the
-# agentgateway controller only. The controller acts as a deployer — when a user
-# creates a Gateway of GatewayClass `agentgateway`, the controller renders the
-# data-plane proxy Deployment for it. There is no `proxy` block in the chart any
-# more; the data-plane image is chosen by the controller's deployer (see below).
-#
-# Defaults below repoint the controller image at the Giant Swarm gsoci mirror
-# and apply restricted-PSS security contexts, so the chart installs on Giant
-# Swarm clusters out of the box. The agentgateway.dev CRDs ship in this chart's
-# crds/ dir (app-owned); Helm never upgrades crds/-dir CRDs, so consumers apply
-# this chart with Flux `crds: CreateReplace`.
+# Defaults below repoint the controller + data-plane images at the Giant Swarm
+# gsoci mirror and apply restricted-PSS security contexts, so the chart installs
+# on Giant Swarm clusters out of the box. The agentgateway.dev CRDs ship in this
+# chart's crds/ dir (app-owned); Helm never upgrades crds/-dir CRDs, so consumers
+# apply this chart with Flux `crds: CreateReplace`.
 agentgateway:  # @schema additionalProperties: true
-  # Default image registry for the components Helm deploys (the controller). The
-  # controller image resolves to
-  # `{image.registry}/{controller.image.repository}:{Chart.AppVersion}` =
-  # gsoci.azurecr.io/giantswarm/agentgateway-controller:v2.2.1 (gsoci-mirrored
-  # via retagger). We intentionally do NOT pin image.tag: leaving it empty lets
-  # the controller tag track the subchart appVersion, so a vendir bump moves the
-  # controller image in lockstep. (In v1 a stale image.tag pin silently held the
-  # controller back — do not reintroduce one.)
-  #
-  # image.registry also feeds KGW_DEFAULT_IMAGE_REGISTRY, the default registry
-  # for kgateway/envoy proxies — which we disable (KGW_ENABLE_ENVOY=false) — so
-  # it has no effect on the agentgateway data plane (see the proxy note below).
-  #
+  # Default image registry/tag for the controller. gsoci-mirrored via retagger.
   # additionalProperties: the vendored subchart contributes more keys to this
   # object (e.g. pullPolicy) than we override here.
   image:  # @schema additionalProperties: true
     registry: gsoci.azurecr.io
+    tag: v1.2.1
   # additionalProperties: the upstream controller block has a large surface
-  # (service, xds, strategy, ...) we deliberately leave at upstream defaults.
+  # (service, xds, autoscalers, ...) we deliberately leave at upstream defaults.
   controller:  # @schema additionalProperties: true
     image:  # @schema additionalProperties: true
       # retagger publishes with override_repo_name, so the path is flat
       # (giantswarm/agentgateway-controller), not the upstream hierarchy.
       repository: giantswarm/agentgateway-controller
-  # Data-plane proxy image (agentgateway sidecar/gateway pod): NOT configurable
-  # from this chart. For agentgateway-class Gateways the kgateway v2.2.1 deployer
-  # hardcodes the proxy image to cr.agentgateway.dev/agentgateway:0.12.0
-  # (AgentgatewayRegistry/AgentgatewayImage/AgentgatewayDefaultTag in
-  # pkg/deployer/wellknown.go). The KGW_DEFAULT_IMAGE_* env the chart sets only
-  # applies to kgateway/envoy proxies, which we disable — it does NOT override
-  # the agentgateway proxy image. The only override path is a per-GatewayClass
-  # AgentgatewayParameters referenced via `gatewayClassParametersRefs`. Repointing
-  # the data plane at the gsoci mirror is a follow-up: gsoci does not yet mirror
-  # the 0.x data-plane tags (retagger only mirrors `>= v1.2.0`), so we leave the
-  # data plane on the upstream default, which exists, rather than a gsoci tag that
-  # does not.
+  # Data-plane proxy image. Tracks the chart appVersion (v1.3.0).
+  proxy:
+    image:
+      registry: gsoci.azurecr.io
+      repository: giantswarm/agentgateway
+      tag: v1.3.1
   # additionalProperties: merged with the subchart's own podAnnotations
   # (e.g. prometheus.io/scrape).
   podAnnotations:  # @schema additionalProperties: true
