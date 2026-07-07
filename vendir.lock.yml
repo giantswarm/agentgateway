@@ -8,8 +8,8 @@ directories:
   path: helm/agentgateway/charts/agentgateway
 - contents:
   - helmChart:
-      appVersion: v1.3.1
-      version: v1.3.1
+      appVersion: v2.2.1
+      version: v2.2.1
     path: .
   path: helm/agentgateway/crds
 kind: LockConfig
