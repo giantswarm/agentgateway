@@ -17,11 +17,11 @@ directories:
 # CRDs (AgentgatewayBackend / AgentgatewayPolicy / AgentgatewayParameters).
 # Upstream ships them in a separate agentgateway-crds chart (as pristine CRD
 # manifests under templates/). We vendor only those manifests into the app
-# chart's crds/ dir (app-owned CRDs). `make sync` then injects
-# helm.sh/resource-policy: keep into each via a committed post-sync step — the
-# crds/ dir is applied by Flux with `crds: CreateReplace`, and the keep
-# annotation stops a later `helm uninstall`/prune from cascade-deleting every
-# agentgateway CR cluster-wide.
+# chart's crds/ dir (app-owned CRDs). `make update-chart` then injects
+# helm.sh/resource-policy: keep into each (crds-keep runs as a prerequisite of
+# update-deps). The crds/ dir is applied by Flux with `crds: CreateReplace`, and
+# the keep annotation stops a later `helm uninstall`/prune from cascade-deleting
+# every agentgateway CR cluster-wide.
 - path: helm/agentgateway/crds
   contents:
   - path: .

@@ -12,21 +12,15 @@ APPLICATION := agentgateway
 # `helm uninstall`/prune so their CRs are never cascade-deleted.
 CRDS := $(wildcard helm/agentgateway/crds/agentgateway.dev_*.yaml)
 
-# vendir sync overwrites crds/ with pristine manifests that lack the keep
-# annotation. Wire crds-keep in as a prerequisite of the generated update-deps
-# target (a prerequisite, not a recipe override, so devctl regeneration of
-# Makefile.gen.app.mk is unaffected). update-chart runs `vendir sync` then
-# `$(MAKE) update-deps`, so this re-injects the annotation on every re-vendor
-# path: `make sync`, `make update-chart`, and `make update-deps`.
+# `make update-chart` is the re-vendor entrypoint: it runs `vendir sync` then
+# `$(MAKE) update-deps`. vendir sync overwrites crds/ with pristine manifests
+# that lack the keep annotation, so wire crds-keep in as a prerequisite of
+# update-deps (a prerequisite, not a recipe override, so devctl regeneration of
+# Makefile.gen.app.mk is unaffected). This re-injects the annotation on every
+# re-vendor path: `make update-chart` and a bare `make update-deps`.
 update-deps: crds-keep
 
-.PHONY: sync crds-keep
-sync: ## Re-vendor the upstream chart + CRDs (pinned in vendir.lock.yml), re-inject the keep annotation, and refresh the local dep lock/tarball.
-	vendir sync
-	$(MAKE) update-deps
-	@echo "Synced upstream controller chart (helm/agentgateway/charts) and CRDs (helm/agentgateway/crds)."
-	@echo "helm.sh/resource-policy: keep re-injected into each crds/ manifest; local dep lock/tarball refreshed."
-
+.PHONY: crds-keep
 crds-keep: ## Inject helm.sh/resource-policy: keep into each vendored CRD (idempotent).
 	@for f in $(CRDS); do \
 		$(YQ) -i '.metadata.annotations."helm.sh/resource-policy" = "keep"' "$$f"; \
