@@ -20,7 +20,6 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | agentgateway.image.registry | string | `"gsoci.azurecr.io"` |  |
-| agentgateway.image.tag | string | `"v1.3.1"` |  |
 | agentgateway.controller.image.repository | string | `"giantswarm/agentgateway-controller"` |  |
 | agentgateway.proxy.image.registry | string | `"gsoci.azurecr.io"` |  |
 | agentgateway.proxy.image.repository | string | `"giantswarm/agentgateway"` |  |
