@@ -30,7 +30,7 @@ agentgateway:  # @schema additionalProperties: true
       registry: gsoci.azurecr.io
       repository: giantswarm/agentgateway
       # renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io
-      tag: v1.3.1
+      tag: v1.4.1
   # additionalProperties: merged with the subchart's own podAnnotations
   # (e.g. prometheus.io/scrape).
   podAnnotations:  # @schema additionalProperties: true
