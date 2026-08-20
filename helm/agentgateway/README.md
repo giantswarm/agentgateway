@@ -1,6 +1,6 @@
 # agentgateway
 
-Giant Swarm packaging of the upstream agentgateway controller (kgateway-based control plane + data-plane proxy), shipping its agentgateway.dev CRDs as app-owned CRDs for the Giant Swarm agentic platform.
+Giant Swarm packaging of the upstream agentgateway controller (kgateway-based control plane + data-plane proxy), shipping its agentgateway.dev CRDs as app-owned CRDs for the Giant Swarm Agent Platform.
 
 **Homepage:** <https://github.com/giantswarm/agentgateway>
 

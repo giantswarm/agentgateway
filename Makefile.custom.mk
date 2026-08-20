@@ -7,7 +7,7 @@ APPLICATION := agentgateway
 
 # CRD files vendored (pristine) from the upstream agentgateway-crds chart into
 # helm/agentgateway/crds/. Helm never upgrades crds/-dir CRDs on its own; Flux
-# applies this dir with `crds: CreateReplace` (set on the agentic-platform
+# applies this dir with `crds: CreateReplace` (set on the agent-platform
 # component). The keep annotation injected below makes the live CRDs survive a
 # `helm uninstall`/prune so their CRs are never cascade-deleted.
 CRDS := $(wildcard helm/agentgateway/crds/agentgateway.dev_*.yaml)

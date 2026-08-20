@@ -5,7 +5,7 @@
 
 Giant Swarm packaging of the upstream [agentgateway](https://agentgateway.dev)
 controller — the kgateway-based control plane plus data-plane proxy that fronts
-MCP and agent traffic on the Giant Swarm agentic platform.
+MCP and agent traffic on the Giant Swarm Agent Platform.
 
 This is a **vendored chart repo**: the upstream chart is pulled verbatim by
 `vendir` and re-published, unmodified except for Giant Swarm defaults, to the
