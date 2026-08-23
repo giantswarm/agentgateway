@@ -1,66 +1,70 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
+    "additionalProperties": false,
     "properties": {
         "agentgateway": {
             "type": "object",
+            "additionalProperties": true,
             "properties": {
                 "controller": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "image": {
                             "type": "object",
+                            "additionalProperties": true,
                             "properties": {
                                 "repository": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": true
+                            }
                         }
-                    },
-                    "additionalProperties": true
+                    }
                 },
                 "image": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "registry": {
                             "type": "string"
                         }
-                    },
-                    "additionalProperties": true
+                    }
                 },
                 "podAnnotations": {
                     "type": "object",
+                    "additionalProperties": true,
                     "properties": {
                         "application.giantswarm.io/team": {
                             "type": "string"
                         }
-                    },
-                    "additionalProperties": true
+                    }
                 },
                 "podSecurityContext": {
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "runAsNonRoot": {
                             "type": "boolean"
                         },
                         "seccompProfile": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "type": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         }
-                    },
-                    "additionalProperties": false
+                    }
                 },
                 "proxy": {
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "image": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "registry": {
                                     "type": "string"
@@ -71,17 +75,17 @@
                                 "tag": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         }
-                    },
-                    "additionalProperties": false
+                    }
                 },
                 "resources": {
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "limits": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -89,11 +93,11 @@
                                 "memory": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         },
                         "requests": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "cpu": {
                                     "type": "string"
@@ -101,20 +105,20 @@
                                 "memory": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         }
-                    },
-                    "additionalProperties": false
+                    }
                 },
                 "securityContext": {
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "allowPrivilegeEscalation": {
                             "type": "boolean"
                         },
                         "capabilities": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "drop": {
                                     "type": "array",
@@ -122,8 +126,7 @@
                                         "type": "string"
                                     }
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         },
                         "readOnlyRootFilesystem": {
                             "type": "boolean"
@@ -133,27 +136,24 @@
                         },
                         "seccompProfile": {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "type": {
                                     "type": "string"
                                 }
-                            },
-                            "additionalProperties": false
+                            }
                         }
-                    },
-                    "additionalProperties": false
+                    }
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "global": {
-            "description": "Global values shared between all subcharts",
-            "$comment": "Added automatically by 'helm schema' to allow this chart to be used as a Helm dependency, as the `additionalProperties` setting would otherwise collide with Helm's special 'global' values key.",
             "type": [
                 "object",
                 "null"
-            ]
+            ],
+            "description": "Global values shared between all subcharts",
+            "$comment": "Added automatically by 'helm schema' to allow this chart to be used as a Helm dependency, as the `additionalProperties` setting would otherwise collide with Helm's special 'global' values key."
         }
-    },
-    "additionalProperties": false
+    }
 }
