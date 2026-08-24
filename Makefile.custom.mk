@@ -18,7 +18,27 @@ CRDS := $(wildcard helm/agentgateway/crds/agentgateway.dev_*.yaml)
 # update-deps (a prerequisite, not a recipe override, so devctl regeneration of
 # Makefile.gen.app.mk is unaffected). This re-injects the annotation on every
 # re-vendor path: `make update-chart` and a bare `make update-deps`.
-update-deps: crds-keep
+update-deps: crds-keep subchart-version
+
+.PHONY: subchart-version
+subchart-version: ## Point the Chart.yaml dependency at the version vendir actually vendored.
+	@v=$$($(YQ) -r '.version' helm/$(APPLICATION)/charts/$(APPLICATION)/Chart.yaml); \
+	$(YQ) -i "(.dependencies[] | select(.name == \"$(APPLICATION)\")).version = \"$$v\"" helm/$(APPLICATION)/Chart.yaml; \
+	$(YQ) -i ".appVersion = \"$${v#v}\"" helm/$(APPLICATION)/Chart.yaml; \
+	echo "dependency pinned to $$v"
+
+.PHONY: verify-subchart-version
+verify-subchart-version: ## Fail when the Chart.yaml dependency and the vendored subchart disagree.
+	@v=$$($(YQ) -r '.version' helm/$(APPLICATION)/charts/$(APPLICATION)/Chart.yaml); \
+	d=$$($(YQ) -r '.dependencies[] | select(.name == "$(APPLICATION)") | .version' helm/$(APPLICATION)/Chart.yaml); \
+	if [ "$$v" != "$$d" ]; then \
+		echo "Chart.yaml requires $$d but charts/$(APPLICATION) is $$v; run 'make update-deps'"; \
+		exit 1; \
+	fi
+	@for f in $(CRDS); do \
+		$(YQ) -e '.metadata.annotations."helm.sh/resource-policy" == "keep"' "$$f" >/dev/null \
+			|| { echo "$$f lost helm.sh/resource-policy: keep; run 'make update-deps'"; exit 1; }; \
+	done
 
 .PHONY: crds-keep
 crds-keep: ## Inject helm.sh/resource-policy: keep into each vendored CRD (idempotent).
