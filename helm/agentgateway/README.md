@@ -13,7 +13,7 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://charts/agentgateway | agentgateway | v1.3.1 |
+| file://charts/agentgateway | agentgateway | v1.4.1 |
 
 ## Values
 
