@@ -43,6 +43,14 @@
         '/(^|[/])agentgateway-crds$/',
       ],
       allowedVersions: '< 2.0.0',
+      // One PR for both charts. sync/verify.sh refuses a tree where the CRDs
+      // and the controller chart sit on different versions, so a PR that moves
+      // only one of them can never go green.
+      groupName: 'agentgateway upstream',
+      // The base preset auto-merges patch updates. A bump PR is not complete
+      // when Renovate opens it: the Sync Renovate branch workflow still has to
+      // push `make sync` on top, and an auto-merge can win that race.
+      automerge: false,
     },
   ],
 }

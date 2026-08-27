@@ -1,0 +1,117 @@
+# Repo-owned, not devctl-generated.
+#
+# Renovate's vendir manager runs `vendir sync` itself to refresh
+# vendir.lock.yml, so a bump PR already carries the new upstream files -- but
+# not sync/sync.sh, which re-applies the Giant Swarm delta on top. Renovate
+# cannot run it for us: postUpgradeTasks needs `allowedCommands`, a self-hosted
+# admin setting, and we are on the Mend cloud app. So every bump PR arrives with
+# the delta wiped and `verify-vendored-chart` red.
+#
+# This job runs `make sync` on the Renovate branch and pushes the result back,
+# which is what a human would otherwise do by hand on every bump.
+#
+# It pushes with a HeraldBot App token rather than GITHUB_TOKEN. A GITHUB_TOKEN
+# push creates no new workflow runs, so `verify` and `pre-commit` would stay red
+# on the stale commit.
+name: Sync Renovate branch
+
+on:
+  push:
+    branches:
+      - 'renovate/vendir/**'
+
+env:
+  VENDIR_VERSION: "0.46.1"
+  # Keep in step with zz_generated.pre-commit.yaml, or the schema and README
+  # this job commits differ from what the pre-commit check regenerates.
+  HELM_DOCS_VERSION: "1.14.2"
+  HELM_VALUES_SCHEMA_JSON_VERSION: "2.6.0"
+
+permissions: {}
+
+jobs:
+  sync:
+    # Our own push re-triggers this workflow. `make sync` is idempotent, so the
+    # second run would find no diff and stop, but skip it outright.
+    if: github.actor != 'heraldbot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.HERALD_CLIENT_ID }}
+          private-key: ${{ secrets.HERALD_APP_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          persist-credentials: false
+
+      - name: Install vendir
+        uses: giantswarm/install-binary-action@5bef88f65012037dd836117c8d344b21bb559854 # v4.1.0
+        with:
+          binary: "vendir"
+          version: "${{ env.VENDIR_VERSION }}"
+          download_url: "https://github.com/carvel-dev/vendir/releases/download/v${version}/vendir-linux-amd64"
+          smoke_test: "${binary} --version"
+
+      - name: Run sync.sh
+        run: make sync
+
+      # sync/sync.sh restores values.yaml, which the schema and README are
+      # generated from. Without this the pre-commit check goes red on the very
+      # commit this job just pushed.
+      - name: Set up Python for pre-commit
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+
+      - name: Install helm-docs
+        uses: giantswarm/install-binary-action@5bef88f65012037dd836117c8d344b21bb559854 # v4.1.0
+        with:
+          binary: helm-docs
+          version: "${{ env.HELM_DOCS_VERSION }}"
+          download_url: "https://github.com/norwoodj/helm-docs/releases/download/v${version}/helm-docs_${version}_Linux_x86_64.tar.gz"
+          tarball_binary_path: "helm-docs"
+          smoke_test: "${binary} --version"
+
+      - name: Cache schema plugin
+        id: cache-schema
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /home/runner/.local/share/helm/plugins/helm-values-schema-json
+          key: ${{ runner.os }}-${{ env.HELM_VALUES_SCHEMA_JSON_VERSION }}-schema
+
+      - name: Install helm-values-schema-json
+        if: steps.cache-schema.outputs.cache-hit != 'true'
+        run: |
+          helm plugin install https://github.com/losisin/helm-values-schema-json \
+            --version "${HELM_VALUES_SCHEMA_JSON_VERSION}"
+
+      # The hooks are fixers: a non-zero exit means they rewrote a file, which is
+      # the outcome we want to commit. The pre-commit check on the PR is the gate.
+      - name: Run pre-commit
+        continue-on-error: true
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        env:
+          GOGC: "20"
+
+      - name: Fail when the delta could not be re-applied
+        run: make verify-sync
+
+      - name: Commit and push
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git config --local user.email "149080493+heraldbot[bot]@users.noreply.github.com"
+          git config --local user.name "HeraldBot[bot]"
+          git add -A
+          if git diff --cached --quiet ; then
+            echo "Nothing to commit; the branch already matches sync/sync.sh."
+            exit 0
+          fi
+          git commit -m "chore: re-apply the Giant Swarm delta (make sync)"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git" \
+            "HEAD:refs/heads/${BRANCH}"
