@@ -90,7 +90,7 @@ controller:
     # keep-app-version. Both values are the vendored version, and
     # `make verify-sync` keeps them equal.
     # renovate: datasource=docker depName=giantswarm/agentgateway-controller registryUrl=https://gsoci.azurecr.io
-    tag: v1.4.1
+    tag: v2.2.1
   # -- Configure the controller service.
   service:
     # -- Create the controller Service.
