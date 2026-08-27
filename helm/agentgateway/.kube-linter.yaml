@@ -1,9 +1,9 @@
 ---
 # kube-linter configuration for the agentgateway chart.
 #
-# The controller is the vendored upstream agentgateway subchart
-# (charts/agentgateway). This wrapper applies restricted-PSS pod/container
-# securityContext defaults via values.yaml, but the upstream templates do not
+# The controller templates are vendored from upstream. The chart applies
+# restricted-PSS pod/container securityContext defaults via values.yaml, but
+# the upstream templates do not
 # wire a securityContext onto every container kube-linter inspects (e.g. the
 # data-plane proxy pods are reconciled by the controller, not templated here).
 # Exclude the static PSS checks that are enforced at admission by Kyverno on

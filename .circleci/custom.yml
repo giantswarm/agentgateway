@@ -1,0 +1,62 @@
+# Repo-owned. The setup workflow in .circleci/config.yml deep-merges this file
+# into the generated .circleci/workflows.yml at pipeline runtime, appending
+# these jobs to the generated ones. devctl never touches it.
+#
+# This repo publishes a SECOND chart: agentgateway-crds, the optional
+# Helm-managed CRD lifecycle path. The generated workflow only knows about the
+# chart named after the repository, so the crds chart needs its own build and
+# push jobs here. Both charts are cut from the same tag, so they always carry
+# the same version.
+#
+# explicit_allow_chart_name_mismatch is required: the orb otherwise enforces
+# that the chart name equals the repository name (optionally with an "-app"
+# suffix), and "agentgateway-crds" does not.
+version: 2.1
+
+workflows:
+  build:
+    jobs:
+
+    # Branch: package + lint the crds chart, no push. Mirrors build-chart.
+    - architect/push-to-app-catalog:
+        executor: app-build-suite
+        context: architect
+        name: build-crds-chart
+        app_catalog: giantswarm-catalog
+        app_catalog_test: giantswarm-test-catalog
+        chart: agentgateway-crds
+        explicit_allow_chart_name_mismatch: true
+        # The chart vendors an upstream release and declares that release as
+        # its appVersion, so app-build-suite must not stamp this repo's own
+        # chart version over it. The generated jobs for the main chart get the
+        # same through gen.ci.keepChartAppVersion (giantswarm/github#5833).
+        override_app_version: false
+        push_to_appcatalog: false
+        push_to_oci_registry: false
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore:
+            - main
+
+    # Tag: publish the crds chart. It carries no images, so unlike the main
+    # chart it does not have to wait on an image push.
+    - architect/push-to-app-catalog:
+        executor: app-build-suite
+        context: architect
+        name: push-crds-chart-release
+        app_catalog: giantswarm-catalog
+        app_catalog_test: giantswarm-test-catalog
+        chart: agentgateway-crds
+        explicit_allow_chart_name_mismatch: true
+        # The chart vendors an upstream release and declares that release as
+        # its appVersion, so app-build-suite must not stamp this repo's own
+        # chart version over it. The generated jobs for the main chart get the
+        # same through gen.ci.keepChartAppVersion (giantswarm/github#5833).
+        override_app_version: false
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
