@@ -4,10 +4,11 @@
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   customManagers: [
     {
-      // Both image tags are pinned in values.yaml from a marker comment: the
-      // proxy tag has no fallback in the upstream template, and the controller
-      // tag must not fall back to .Chart.AppVersion because app-build-suite
-      // overrides appVersion with the chart's own version at package time.
+      // The proxy tag is pinned in values.yaml from a marker comment: the
+      // upstream template has no fallback for it, so with no tag the
+      // AGW_PROXY_IMAGE_TAG env var is not set at all. The controller tag falls
+      // back to .Chart.AppVersion, which sync/patches/chart-yaml holds at the
+      // vendored version, so it needs no marker.
       //
       // Both files are listed on purpose. sync/patches/values/values.yaml is
       // the source of truth and helm/agentgateway/values.yaml is the copy that
@@ -27,19 +28,18 @@
     {
       // The standalone agentgateway product is on the v1.x line: the charts
       // (cr.agentgateway.dev/charts/agentgateway and .../agentgateway-crds) and
-      // the gsoci-mirrored controller/proxy images track
+      // the gsoci-mirrored proxy image track
       // github.com/agentgateway/agentgateway releases. The v2.x tags in
       // cr.agentgateway.dev are the deprecated kgateway-based control plane, a
       // different product. Renovate sees 2.2.1 > 1.4.1 and would bump across
       // products, so cap at < 2.0.0.
       // Matched by regex, anchored on the trailing path segment. Renovate names
       // an image from a custom manager with its registry included
-      // (gsoci.azurecr.io/giantswarm/agentgateway-controller), so a bare
+      // (gsoci.azurecr.io/giantswarm/agentgateway), so a bare
       // `giantswarm/...` entry silently matches nothing and the cap does not
       // apply -- which is how PR #34 proposed v1.4.1 -> v2.2.1.
       matchPackageNames: [
         '/(^|[/])agentgateway$/',
-        '/(^|[/])agentgateway-controller$/',
         '/(^|[/])agentgateway-crds$/',
       ],
       allowedVersions: '< 2.0.0',

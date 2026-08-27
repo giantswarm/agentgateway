@@ -54,6 +54,3 @@ ignored.
   same catalog and cut from the same tag. It is for consumers that want Helm to
   own the CRD lifecycle. Install it *instead of* relying on the `crds/` dir;
   installing both makes two Helm releases own the same cluster-scoped objects.
-- `controller.image.tag` is pinned in `values.yaml` instead of falling back to
-  `.Chart.AppVersion`. Set it explicitly if you pin the controller image
-  yourself.

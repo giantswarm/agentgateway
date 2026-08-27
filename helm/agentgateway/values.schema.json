@@ -101,7 +101,7 @@
                         },
                         "tag": {
                             "type": "string",
-                            "description": "Set the image tag for the controller. Interim, and tracked in #33: the upstream template falls back to .Chart.AppVersion, which is the upstream release here, but app-build-suite repo's chart version instead. The fallback would then resolve to a tag that does not exist. Remove this pin once giantswarm/app-build-suite#594 and giantswarm/architect-orb#905 ship and `.abs/main.yaml` sets keep-app-version. Both values are the vendored version, and `make verify-sync` keeps them equal. renovate: datasource=docker depName=giantswarm/agentgateway-controller registryUrl=https://gsoci.azurecr.io"
+                            "description": "Set the image tag for the controller. Empty falls back to .Chart.AppVersion, the vendored upstream release."
                         }
                     }
                 },

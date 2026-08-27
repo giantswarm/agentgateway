@@ -1,5 +1,5 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index 59eb9b8..50aa454 100644
+index 59eb9b8..ac18e83 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
 @@ -23,23 +23,37 @@ serviceAccount:
@@ -45,7 +45,7 @@ index 59eb9b8..50aa454 100644
 
  # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
  nodeSelector: {}
-@@ -61,13 +75,22 @@ controller:
+@@ -61,12 +75,13 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
@@ -56,22 +56,13 @@ index 59eb9b8..50aa454 100644
 +    repository: giantswarm/agentgateway-controller
      # -- Set the image pull policy for the controller.
      pullPolicy: ""
-     # -- Set the image tag for the controller.
--    tag: ""
-+    # Interim, and tracked in #33: the upstream template falls back to
-+    # .Chart.AppVersion, which is the upstream release here, but app-build-suite
-+    # packages with --override-app-version so the PUBLISHED chart advertises this
-+    # repo's chart version instead. The fallback would then resolve to a tag that
-+    # does not exist. Remove this pin once giantswarm/app-build-suite#594 and
-+    # giantswarm/architect-orb#905 ship and `.abs/main.yaml` sets
-+    # keep-app-version. Both values are the vendored version, and
-+    # `make verify-sync` keeps them equal.
-+    # renovate: datasource=docker depName=giantswarm/agentgateway-controller registryUrl=https://gsoci.azurecr.io
-+    tag: v1.4.1
+-    # -- Set the image tag for the controller.
++    # -- Set the image tag for the controller. Empty falls back to
++    # .Chart.AppVersion, the vendored upstream release.
+     tag: ""
    # -- Configure the controller service.
    service:
-     # -- Create the controller Service.
-@@ -193,16 +216,17 @@ proxy:
+@@ -193,16 +208,17 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.

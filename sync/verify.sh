@@ -54,16 +54,20 @@ for pair in "${chart}:${chart_version}" "${crds_chart}:${crds_version}" ; do
 	fi
 done
 
-# Both image tags are pinned to the vendored version. The upstream template
-# falls back to appVersion for the controller (that pin is interim, see #33) and
-# has no fallback at all for the proxy, so keep both equal to the vendored
-# version and the image is right whichever one is in play.
-for key in controller.image.tag proxy.image.tag ; do
-	tag=$(yq -r ".${key}" "${chart}/values.yaml")
-	if [ "${tag}" != "${chart_version}" ] ; then
-		note "${chart}/values.yaml pins ${key} ${tag} but vendir.yml vendors ${chart_version}; run 'make sync'"
-	fi
-done
+# The proxy tag has no appVersion fallback in the upstream template, and with no
+# tag the AGW_PROXY_IMAGE_TAG env var is not set at all, so the pin is
+# load-bearing.
+proxy_tag=$(yq -r '.proxy.image.tag' "${chart}/values.yaml")
+if [ "${proxy_tag}" != "${chart_version}" ] ; then
+	note "${chart}/values.yaml pins proxy.image.tag ${proxy_tag} but vendir.yml vendors ${chart_version}; run 'make sync'"
+fi
+
+# The controller tag stays empty, so the template falls back to appVersion, which
+# the check above holds at the vendored version.
+controller_tag=$(yq -r '.controller.image.tag' "${chart}/values.yaml")
+if [ -n "${controller_tag}" ] && [ "${controller_tag}" != "null" ] ; then
+	note "${chart}/values.yaml sets controller.image.tag ${controller_tag}; leave it empty so the template falls back to appVersion"
+fi
 
 if yq -e '.dependencies' "${chart}/Chart.yaml" >/dev/null 2>&1 ; then
 	note "${chart}/Chart.yaml still declares dependencies; the chart is flattened"
