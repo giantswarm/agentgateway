@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fixed: `make sync` no longer deletes `helm/agentgateway-crds/values.yaml`, `.schema.yaml` and `zz_generated.app-platform.values.yaml`. vendir treated them as unmanaged content in the CRD chart and removed them, which left the pre-commit schema hook without its config.
+
 - fixed: the Renovate cap that keeps this repo on the upstream `v1.x` line now matches. Renovate names an
   image from a custom manager with its registry included, so the `giantswarm/agentgateway-controller`
   entry matched nothing and Renovate proposed the controller image at `v2.2.1` (#34), which is the
