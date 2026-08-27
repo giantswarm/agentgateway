@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fixed: the Renovate cap that keeps this repo on the upstream `v1.x` line now matches. Renovate names an
+  image from a custom manager with its registry included, so the `giantswarm/agentgateway-controller`
+  entry matched nothing and Renovate proposed the controller image at `v2.2.1` (#34), which is the
+  deprecated kgateway control plane. The entries are regexes anchored on the trailing path segment, so
+  they hold whether or not the name carries a registry.
+
 - changed: **breaking** flattened the chart. The upstream controller chart is no longer a subchart under `charts/agentgateway`: its files are vendored onto the chart root, so consumers set upstream keys at the top level (`controller.*`) instead of nesting them under `agentgateway.*`. See `UPGRADE.md`.
 - added: `agentgateway-crds` chart, the same `agentgateway.dev` CRDs as a chart of their own for consumers that let Helm own the CRD lifecycle. Published from this repo, cut from the same tag as `agentgateway`. Its `values.schema.json` accepts any value: the chart has none of its own, and the app platform injects cluster values.
 - added: `sync/sync.sh` as the re-vendor entrypoint (`make sync`), with the Giant Swarm delta under `sync/patches/` and the delta from upstream stored in `diffs/`.
