@@ -2,26 +2,22 @@
 # for details and background.
 
 apiVersion: v2
-
-# Version of the packaged app (upstream agentgateway controller release).
-appVersion: 1.4.1
-
+# Version of the packaged app (upstream agentgateway controller release). Kept
+# in step with the vendored chart by sync/patches/chart-yaml. The controller
+# image tag falls back to this value, so it also selects the controller image.
+appVersion: v1.4.1
 # Make sure your name DOES NOT end in "app" or "-app".
 name: agentgateway
-
 # Please describe what the app provides in a sentence or two.
 description: Giant Swarm packaging of the upstream agentgateway controller (kgateway-based control plane + data-plane proxy), shipping its agentgateway.dev CRDs as app-owned CRDs for the Giant Swarm Agent Platform.
-
 # URL of the GitHub repository that is the source of this Chart.yaml file.
 home: https://github.com/giantswarm/agentgateway
-
 # If you have an icon/logo, you should add it to https://github.com/giantswarm/web-assets
 # and set the final URL here.
 icon: https://s.giantswarm.io/app-icons/giantswarm/1/light.svg
-
 sources:
-- https://github.com/giantswarm/agentgateway
-- https://github.com/agentgateway/agentgateway
+  - https://github.com/giantswarm/agentgateway
+  - https://github.com/agentgateway/agentgateway
 version: 0.0.0-dev
 annotations:
   # Adapt to 'giantswarm' if this application is not to be deployed by customers
@@ -30,10 +26,3 @@ annotations:
   io.giantswarm.application.managed: "true"
   # used through .Chart.Annotations . Please replace TEAM-NAME with your team's short name, e. g. 'shield'  for team-shield
   io.giantswarm.application.team: bumblebee
-dependencies:
-  # Upstream agentgateway controller chart, vendored under charts/ by vendir
-  # (the pinned ref is tracked in vendir.lock.yml). The controller chart ships
-  # no CRDs — those live in this chart's crds/ dir (app-owned CRDs).
-  - name: agentgateway
-    repository: file://charts/agentgateway
-    version: v1.4.1

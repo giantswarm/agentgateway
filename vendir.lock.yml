@@ -4,12 +4,18 @@ directories:
   - helmChart:
       appVersion: v1.4.1
       version: v1.4.1
-    path: .
-  path: helm/agentgateway/charts/agentgateway
-- contents:
+    path: agentgateway
   - helmChart:
       appVersion: v1.4.1
       version: v1.4.1
+    path: agentgateway-crds
+  path: vendor
+- contents:
+  - directory: {}
     path: .
-  path: helm/agentgateway/crds
+  path: helm/agentgateway
+- contents:
+  - directory: {}
+    path: .
+  path: helm/agentgateway-crds
 kind: LockConfig

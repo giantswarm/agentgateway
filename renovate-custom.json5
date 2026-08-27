@@ -4,12 +4,18 @@
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   customManagers: [
     {
-      // The controller image tracks the vendored subchart appVersion (via the
-      // chart's own template fallback + the vendir chart bump), so it needs no
-      // Renovate rule. The data-plane proxy tag has no such fallback and is
-      // pinned in values.yaml, so bump it from the marker comment there.
+      // Both image tags are pinned in values.yaml from a marker comment: the
+      // proxy tag has no fallback in the upstream template, and the controller
+      // tag must not fall back to .Chart.AppVersion because app-build-suite
+      // overrides appVersion with the chart's own version at package time.
+      //
+      // Both files are listed on purpose. sync/patches/values/values.yaml is
+      // the source of truth and helm/agentgateway/values.yaml is the copy that
+      // sync/sync.sh writes, so a bump has to land in both or the next sync
+      // reverts it (and `make verify-sync` fails the PR).
       customType: 'regex',
       managerFilePatterns: [
+        'sync/patches/values/values.yaml',
         'helm/agentgateway/values.yaml',
       ],
       matchStrings: [
@@ -19,16 +25,18 @@
   ],
   packageRules: [
     {
-      // The standalone agentgateway product is on the v1.x line: the chart
-      // (cr.agentgateway.dev/charts/agentgateway) and the gsoci-mirrored
-      // controller/proxy images track github.com/agentgateway/agentgateway
-      // releases (latest v1.3.1). The v2.x tags in cr.agentgateway.dev are the
-      // deprecated kgateway-based control plane, a different product. Renovate
-      // sees 2.2.1 > 1.3.1 and would bump across products, so cap at < 2.0.0.
+      // The standalone agentgateway product is on the v1.x line: the charts
+      // (cr.agentgateway.dev/charts/agentgateway and .../agentgateway-crds) and
+      // the gsoci-mirrored controller/proxy images track
+      // github.com/agentgateway/agentgateway releases. The v2.x tags in
+      // cr.agentgateway.dev are the deprecated kgateway-based control plane, a
+      // different product. Renovate sees 2.2.1 > 1.4.1 and would bump across
+      // products, so cap at < 2.0.0.
       matchPackageNames: [
         'cr.agentgateway.dev/charts/agentgateway',
         'cr.agentgateway.dev/charts/agentgateway-crds',
         'giantswarm/agentgateway',
+        'giantswarm/agentgateway-controller',
       ],
       allowedVersions: '< 2.0.0',
     },

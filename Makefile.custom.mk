@@ -5,44 +5,18 @@
 # command-line override still wins.
 APPLICATION := agentgateway
 
-# CRD files vendored (pristine) from the upstream agentgateway-crds chart into
-# helm/agentgateway/crds/. Helm never upgrades crds/-dir CRDs on its own; Flux
-# applies this dir with `crds: CreateReplace` (set on the agent-platform
-# component). The keep annotation injected below makes the live CRDs survive a
-# `helm uninstall`/prune so their CRs are never cascade-deleted.
-CRDS := $(wildcard helm/agentgateway/crds/agentgateway.dev_*.yaml)
+# The upstream chart is flattened onto the chart root by vendir and the Giant
+# Swarm delta is re-applied by sync/sync.sh, so re-vendoring is that script and
+# not `helm dependency update`. Override the generated update-chart/update-deps
+# entrypoints (there is no dependency left to resolve) so a habitual
+# `make update-chart` does the right thing.
+.PHONY: sync
+sync: ## Re-vendor upstream and re-apply the Giant Swarm delta (see sync/sync.sh).
+	./sync/sync.sh
 
-# `make update-chart` is the re-vendor entrypoint: it runs `vendir sync` then
-# `$(MAKE) update-deps`. vendir sync overwrites crds/ with pristine manifests
-# that lack the keep annotation, so wire crds-keep in as a prerequisite of
-# update-deps (a prerequisite, not a recipe override, so devctl regeneration of
-# Makefile.gen.app.mk is unaffected). This re-injects the annotation on every
-# re-vendor path: `make update-chart` and a bare `make update-deps`.
-update-deps: crds-keep subchart-version
+update-chart: sync
+update-deps: sync
 
-.PHONY: subchart-version
-subchart-version: ## Point the Chart.yaml dependency at the version vendir actually vendored.
-	@v=$$($(YQ) -r '.version' helm/$(APPLICATION)/charts/$(APPLICATION)/Chart.yaml); \
-	$(YQ) -i "(.dependencies[] | select(.name == \"$(APPLICATION)\")).version = \"$$v\"" helm/$(APPLICATION)/Chart.yaml; \
-	$(YQ) -i ".appVersion = \"$${v#v}\"" helm/$(APPLICATION)/Chart.yaml; \
-	echo "dependency pinned to $$v"
-
-.PHONY: verify-subchart-version
-verify-subchart-version: ## Fail when the Chart.yaml dependency and the vendored subchart disagree.
-	@v=$$($(YQ) -r '.version' helm/$(APPLICATION)/charts/$(APPLICATION)/Chart.yaml); \
-	d=$$($(YQ) -r '.dependencies[] | select(.name == "$(APPLICATION)") | .version' helm/$(APPLICATION)/Chart.yaml); \
-	if [ "$$v" != "$$d" ]; then \
-		echo "Chart.yaml requires $$d but charts/$(APPLICATION) is $$v; run 'make update-deps'"; \
-		exit 1; \
-	fi
-	@for f in $(CRDS); do \
-		$(YQ) -e '.metadata.annotations."helm.sh/resource-policy" == "keep"' "$$f" >/dev/null \
-			|| { echo "$$f lost helm.sh/resource-policy: keep; run 'make update-deps'"; exit 1; }; \
-	done
-
-.PHONY: crds-keep
-crds-keep: ## Inject helm.sh/resource-policy: keep into each vendored CRD (idempotent).
-	@for f in $(CRDS); do \
-		$(YQ) -i '.metadata.annotations."helm.sh/resource-policy" = "keep"' "$$f"; \
-		echo "annotated $$f"; \
-	done
+.PHONY: verify-sync
+verify-sync: ## Fail when the tree does not match what sync/sync.sh produces.
+	./sync/verify.sh
