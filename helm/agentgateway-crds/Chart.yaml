@@ -9,7 +9,7 @@
 apiVersion: v2
 # Kept in step with the vendored agentgateway-crds chart by
 # sync/patches/chart-yaml.
-appVersion: v1.4.1
+appVersion: v1.5.0
 name: agentgateway-crds
 description: Giant Swarm packaging of the upstream agentgateway.dev CRDs (AgentgatewayBackend, AgentgatewayModel, AgentgatewayParameters, AgentgatewayPolicy) as a Helm-managed chart.
 home: https://github.com/giantswarm/agentgateway

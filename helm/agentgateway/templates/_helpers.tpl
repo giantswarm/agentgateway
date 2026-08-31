@@ -27,7 +27,8 @@ If release name contains chart name it will be used as a full name.
 Create chart name and version as used by the chart label.
 */}}
 {{- define "agentgateway.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- $chart := printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 }}
+{{- regexReplaceAll "[^a-zA-Z0-9]+$" $chart "" }}
 {{- end }}
 
 {{/*
@@ -40,6 +41,7 @@ helm.sh/chart: {{ include "agentgateway.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+application.giantswarm.io/team: {{ index .Chart.Annotations "io.giantswarm.application.team" | quote }}
 {{- with .Values.commonLabels | default dict }}
 {{ toYaml . }}
 {{- end }}
@@ -94,4 +96,3 @@ Otherwise (e.g., "latest", "dev"), return it unchanged.
 {{- $tag -}}
 {{- end -}}
 {{- end }}
-

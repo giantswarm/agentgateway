@@ -5,7 +5,7 @@ apiVersion: v2
 # Version of the packaged app (upstream agentgateway controller release). Kept
 # in step with the vendored chart by sync/patches/chart-yaml. The controller
 # image tag falls back to this value, so it also selects the controller image.
-appVersion: v1.4.1
+appVersion: v1.5.0
 # Make sure your name DOES NOT end in "app" or "-app".
 name: agentgateway
 # Please describe what the app provides in a sentence or two.
