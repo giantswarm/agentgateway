@@ -21,7 +21,7 @@ directories:
   - path: agentgateway-crds
     helmChart:
       name: agentgateway-crds
-      version: "v1.4.1"
+      version: "v1.5.0"
       repository:
         url: oci://cr.agentgateway.dev/charts
 

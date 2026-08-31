@@ -23,37 +23,23 @@ serviceAccount:
 deploymentAnnotations: {}
 
 # -- Add annotations to the agentgateway pods.
-podAnnotations:  # @schema additionalProperties: true
+podAnnotations:
   prometheus.io/scrape: "true"
-  application.giantswarm.io/team: bumblebee
 
 # -- Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).
 podLabels: {}
 
 # -- Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000.
-podSecurityContext:  # @schema additionalProperties: true
-  runAsNonRoot: true
-  seccompProfile:
-    type: RuntimeDefault
+podSecurityContext: {}
 
 # -- Set the container-level security context, such as 'runAsNonRoot: true'.
-securityContext:  # @schema additionalProperties: true
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  capabilities:
-    drop: [ALL]
-  seccompProfile:
-    type: RuntimeDefault
+securityContext: {}
 
 # -- Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'.
-resources:  # @schema additionalProperties: true
+resources:
   requests:
-    cpu: 50m
+    cpu: 100m
     memory: 128Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
 
 # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
 nodeSelector: {}
@@ -75,13 +61,12 @@ controller:
   # -- Configure the controller container image.
   image:
     # -- Set the image registry for the controller.
-    registry: gsoci.azurecr.io
+    registry: ""
     # -- Set the image repository for the controller.
-    repository: giantswarm/agentgateway-controller
+    repository: controller
     # -- Set the image pull policy for the controller.
     pullPolicy: ""
-    # -- Set the image tag for the controller. Empty falls back to
-    # .Chart.AppVersion, the vendored upstream release.
+    # -- Set the image tag for the controller.
     tag: ""
   # -- Configure the controller service.
   service:
@@ -208,17 +193,16 @@ proxy:
   image:
     # -- Set the default image registry.
     # Set to override the global value.
-    registry: gsoci.azurecr.io
+    registry: ""
     # -- Set the default image repository.
-    repository: giantswarm/agentgateway
+    repository: agentgateway
     # -- Set the default image tag.
-    # renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io
-    tag: v1.4.1
+    tag: ""
 
 # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
 image:
   # -- Set the default image registry.
-  registry: gsoci.azurecr.io
+  registry: cr.agentgateway.dev
   # -- Set the default image tag.
   tag: ""
   # -- Set the default image pull policy.
