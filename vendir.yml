@@ -12,7 +12,7 @@ directories:
   - path: agentgateway
     helmChart:
       name: agentgateway
-      version: "v1.4.1"
+      version: "v1.5.0"
       repository:
         url: oci://cr.agentgateway.dev/charts
   # Upstream agentgateway-crds chart. Its templates/ holds the pristine
