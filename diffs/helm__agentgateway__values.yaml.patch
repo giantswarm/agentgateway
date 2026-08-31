@@ -1,18 +1,16 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index f089fc3..f589b9d 100644
+index f089fc3..b40f56b 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
-@@ -19,33 +19,41 @@ serviceAccount:
+@@ -19,7 +19,6 @@ serviceAccount:
    # -- Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.
    name: ""
 
 -# -- Configure the RBAC permissions created for the controller.
--rbac:
--  # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
--  # Restricting this list means only Gateways in these namespaces can be used.
--  gatewayNamespaces: []
--
- # -- Add annotations to the agentgateway deployment.
+ rbac:
+   # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
+   # Restricting this list means only Gateways in these namespaces can be used.
+@@ -29,23 +28,37 @@ rbac:
  deploymentAnnotations: {}
 
  # -- Add annotations to the agentgateway pods.
@@ -55,7 +53,7 @@ index f089fc3..f589b9d 100644
 
  # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
  nodeSelector: {}
-@@ -56,18 +64,10 @@ tolerations: []
+@@ -56,18 +69,10 @@ tolerations: []
  # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
  affinity: {}
 
@@ -74,7 +72,7 @@ index f089fc3..f589b9d 100644
    # -- Set the priority class name for the controller pod.
    priorityClassName: ""
    # -- Set the log level for the controller.
-@@ -75,12 +75,13 @@ controller:
+@@ -75,12 +80,13 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
@@ -91,7 +89,7 @@ index f089fc3..f589b9d 100644
      tag: ""
    # -- Configure the controller service.
    service:
-@@ -207,16 +208,17 @@ proxy:
+@@ -207,16 +213,17 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.

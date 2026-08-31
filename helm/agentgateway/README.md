@@ -21,6 +21,7 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 | serviceAccount.create | bool | `true` | Specify whether a service account should be created. |
 | serviceAccount.annotations | object | `{}` | Add annotations to the service account. |
 | serviceAccount.name | string | `""` | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template. |
+| rbac.gatewayNamespaces | list | `[]` | Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected. Restricting this list means only Gateways in these namespaces can be used. |
 | deploymentAnnotations | object | `{}` | Add annotations to the agentgateway deployment. |
 | podAnnotations | object | `{"application.giantswarm.io/team":"bumblebee","prometheus.io/scrape":"true"}` | Add annotations to the agentgateway pods. |
 | podLabels | object | `{}` | Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters). |
