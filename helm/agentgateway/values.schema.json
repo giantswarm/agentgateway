@@ -509,6 +509,16 @@
                 }
             }
         },
+        "rbac": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "gatewayNamespaces": {
+                    "type": "array",
+                    "description": "Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected. Restricting this list means only Gateways in these namespaces can be used."
+                }
+            }
+        },
         "resources": {
             "type": "object",
             "description": "Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'.",

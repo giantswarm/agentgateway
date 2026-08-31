@@ -21,6 +21,7 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 | serviceAccount.create | bool | `true` | Specify whether a service account should be created. |
 | serviceAccount.annotations | object | `{}` | Add annotations to the service account. |
 | serviceAccount.name | string | `""` | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template. |
+| rbac.gatewayNamespaces | list | `[]` | Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected. Restricting this list means only Gateways in these namespaces can be used. |
 | deploymentAnnotations | object | `{}` | Add annotations to the agentgateway deployment. |
 | podAnnotations | object | `{"application.giantswarm.io/team":"bumblebee","prometheus.io/scrape":"true"}` | Add annotations to the agentgateway pods. |
 | podLabels | object | `{}` | Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters). |
@@ -72,10 +73,10 @@ Giant Swarm packaging of the upstream agentgateway controller (kgateway-based co
 | controller.podDisruptionBudget | object | `{}` | Set pod disruption budget for the controller. Note that this does not    affect the data plane. E.g.:  podDisruptionBudget:   minAvailable: 100% |
 | controller.horizontalPodAutoscaler | object | `{}` | Set horizontal pod autoscaler for the controller. Note that this does not    affect the data plane. The scaleTargetRef is automatically configured to    target the controller deployment. E.g.:  horizontalPodAutoscaler:   minReplicas: 1   maxReplicas: 5   metrics:     - type: Resource       resource:         name: cpu         target:           type: Utilization           averageUtilization: 80 |
 | controller.verticalPodAutoscaler | object | `{}` | Set vertical pod autoscaler for the controller. Note that this does not    affect the data plane. The targetRef is automatically configured to    target the controller deployment. E.g.:  verticalPodAutoscaler:   updatePolicy:     updateMode: Auto   resourcePolicy:     containerPolicies:       - containerName: "*"         minAllowed:           cpu: 100m           memory: 128Mi |
-| proxy | object | `{"image":{"registry":"gsoci.azurecr.io","repository":"giantswarm/agentgateway","tag":"v1.4.1"}}` | Configure the agentgateway data plane deployment. |
+| proxy | object | `{"image":{"registry":"gsoci.azurecr.io","repository":"giantswarm/agentgateway","tag":"v1.5.0"}}` | Configure the agentgateway data plane deployment. |
 | proxy.image.registry | string | `"gsoci.azurecr.io"` | Set the default image registry. Set to override the global value. |
 | proxy.image.repository | string | `"giantswarm/agentgateway"` | Set the default image repository. |
-| proxy.image.tag | string | `"v1.4.1"` | Set the default image tag. renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io |
+| proxy.image.tag | string | `"v1.5.0"` | Set the default image tag. renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io |
 | image | object | `{"pullPolicy":"IfNotPresent","registry":"gsoci.azurecr.io","tag":""}` | Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets. |
 | image.registry | string | `"gsoci.azurecr.io"` | Set the default image registry. |
 | image.tag | string | `""` | Set the default image tag. |

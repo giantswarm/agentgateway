@@ -1,8 +1,16 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index 59eb9b8..ac18e83 100644
+index f089fc3..b40f56b 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
-@@ -23,23 +23,37 @@ serviceAccount:
+@@ -19,7 +19,6 @@ serviceAccount:
+   # -- Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.
+   name: ""
+
+-# -- Configure the RBAC permissions created for the controller.
+ rbac:
+   # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
+   # Restricting this list means only Gateways in these namespaces can be used.
+@@ -29,23 +28,37 @@ rbac:
  deploymentAnnotations: {}
 
  # -- Add annotations to the agentgateway pods.
@@ -45,7 +53,26 @@ index 59eb9b8..ac18e83 100644
 
  # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
  nodeSelector: {}
-@@ -61,12 +75,13 @@ controller:
+@@ -56,18 +69,10 @@ tolerations: []
+ # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
+ affinity: {}
+
+-# -- Configure how controller pods are spread across topology domains, such as nodes or zones.
+-topologySpreadConstraints: []
+-
+-# -- Set the pod DNS configuration, such as 'options: [{name: ndots, value: "3"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.
+-dnsConfig: {}
+-
+ # -- Configure the agentgateway control plane deployment.
+ controller:
+   # -- Set the number of controller pod replicas.
+   replicaCount: 1
+-  # -- Set the number of old ReplicaSets the controller deployment retains for rollback. Leave unset to use the Kubernetes default of 10. '0' is honored and keeps no history.
+-  revisionHistoryLimit:
+   # -- Set the priority class name for the controller pod.
+   priorityClassName: ""
+   # -- Set the log level for the controller.
+@@ -75,12 +80,13 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
@@ -62,7 +89,7 @@ index 59eb9b8..ac18e83 100644
      tag: ""
    # -- Configure the controller service.
    service:
-@@ -193,16 +208,17 @@ proxy:
+@@ -207,16 +213,17 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.
@@ -74,7 +101,7 @@ index 59eb9b8..ac18e83 100644
      # -- Set the default image tag.
 -    tag: ""
 +    # renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io
-+    tag: v1.4.1
++    tag: v1.5.0
 
  # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
  image:
