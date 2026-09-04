@@ -8,8 +8,6 @@
 # tests/ats is ready; remove the matching entries from skip-steps once the kind
 # fixture provisions the Gateway API prerequisites. Same approach as
 # giantswarm/agent-sandbox.
-smoke-tests-cluster-type: kind
-upgrade-tests-cluster-type: kind
 # @TODO: enable ATS tests by removing the matching entries from skip-steps once
 # the kind fixture installs the Gateway API CRDs + GatewayClass the controller needs.
 skip-steps: [smoke,functional,upgrade]
