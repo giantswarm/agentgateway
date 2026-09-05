@@ -1,13 +1,15 @@
-# app-test-suite configuration.
+# app-test-suite (ATS >= 1.0) config, consumed by the generated
+# `run-tests-with-ats` CircleCI job (execute-chart-tests). The job creates the
+# kind cluster and hands ATS its kubeconfig; helm and kubectl come with the
+# ATS image.
 #
-# Smoke/functional/upgrade test execution is skipped in CI for now: a real run
-# deploys the chart on a kind cluster and additionally requires the Gateway API
-# CRDs + a GatewayClass for the agentgateway controller to become healthy, which
-# the bare app-test-suite kind cluster does not provide. The gsoci-mirrored
-# controller/proxy images themselves are available. The smoke test under
-# tests/ats is ready; remove the matching entries from skip-steps once the kind
-# fixture provisions the Gateway API prerequisites. Same approach as
-# giantswarm/agent-sandbox.
-# @TODO: enable ATS tests by removing the matching entries from skip-steps once
-# the kind fixture installs the Gateway API CRDs + GatewayClass the controller needs.
-skip-steps: [smoke,functional,upgrade]
+# Smoke: the ATS image bootstraps the Gateway API CRDs (standard channel plus
+# the inference extension, /etc/ats/crds in the image) before the deploy; ATS
+# then installs the packaged chart with `helm upgrade --install --wait` (the
+# agentgateway.dev CRDs ship in the chart's crds/, controller and proxy images
+# are the gsoci mirrors) and the controller creates its own GatewayClass
+# (`agentgateway`) once it runs, so nothing else has to be provisioned first.
+# tests/ats asserts that the controller Deployment is ready.
+#
+# functional and upgrade stay skipped: there is no second scenario yet.
+skip-steps: [functional,upgrade]
