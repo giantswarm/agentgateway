@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- changed: Renovate proposes an upstream release as one bump (both charts and the proxy image tag) on a `renovate/vendir/` branch, and the sync-from-upstream workflow completes it: the Giant Swarm delta is re-applied and the reviewable PR opens from `main#update-chart`, so a bump no longer needs manual `make sync` and pre-commit commits. Renovate's own PR waits for Dependency Dashboard approval, so a bump is proposed once.
+- fixed: the reviewer diffs under `diffs/` are always plain unified patches, independent of the developer's git external diff tool.
+
 - fixed: `make sync` no longer deletes `helm/agentgateway-crds/values.yaml`, `.schema.yaml` and `zz_generated.app-platform.values.yaml`. vendir treated them as unmanaged content in the CRD chart and removed them, which left the pre-commit schema hook without its config.
 
 - fixed: the Renovate cap that keeps this repo on the upstream `v1.x` line now matches. Renovate names an

@@ -44,5 +44,22 @@
       ],
       allowedVersions: '< 2.0.0',
     },
+    {
+      // One Renovate branch per upstream release. `make verify-sync` requires
+      // the CRD chart to track the controller chart and `proxy.image.tag` to
+      // equal the vendored version, so a bump of only one of the three can
+      // never go green (#37 had to fold #38 and #41 in by hand). The branch
+      // keeps the renovate/vendir/ prefix because the sync-from-upstream
+      // workflow triggers on it, re-applies the Giant Swarm delta and opens
+      // the reviewable PR from `main#update-chart`; Renovate's own PR waits
+      // for Dependency Dashboard approval so the bump is not proposed twice.
+      matchPackageNames: [
+        '/(^|[/])agentgateway$/',
+        '/(^|[/])agentgateway-crds$/',
+      ],
+      groupName: 'agentgateway',
+      branchPrefix: 'renovate/vendir/',
+      prCreation: 'approval',
+    },
   ],
 }
