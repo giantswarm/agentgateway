@@ -54,19 +54,28 @@ for pair in "${chart}:${chart_version}" "${crds_chart}:${crds_version}" ; do
 	fi
 done
 
-# The proxy tag has no appVersion fallback in the upstream template, and with no
-# tag the AGW_PROXY_IMAGE_TAG env var is not set at all, so the pin is
-# load-bearing.
+# Both image tags are releases of the Giant Swarm line of agentgateway
+# (github.com/giantswarm/agentgateway-upstream, FORK.md "Publishing"): the
+# vendored upstream release rebuilt there and tagged vX.Y.(Z+1)-gs.N, where
+# vX.Y.Z is the line's pin — so the tag's base must be the next patch of the
+# vendored version, and both images come from the same release. The proxy tag
+# has no appVersion fallback in the upstream template (with no tag the
+# AGW_PROXY_IMAGE_TAG env var is not set at all); the controller tag must not be
+# left to the appVersion fallback either, because that names upstream's build.
+IFS=. read -r vendored_major vendored_minor vendored_patch <<<"${chart_version#v}"
+line_base="v${vendored_major}.${vendored_minor}.$((vendored_patch + 1))"
 proxy_tag=$(yq -r '.proxy.image.tag' "${chart}/values.yaml")
-if [ "${proxy_tag}" != "${chart_version}" ] ; then
-	note "${chart}/values.yaml pins proxy.image.tag ${proxy_tag} but vendir.yml vendors ${chart_version}; run 'make sync'"
-fi
-
-# The controller tag stays empty, so the template falls back to appVersion, which
-# the check above holds at the vendored version.
 controller_tag=$(yq -r '.controller.image.tag' "${chart}/values.yaml")
-if [ -n "${controller_tag}" ] && [ "${controller_tag}" != "null" ] ; then
-	note "${chart}/values.yaml sets controller.image.tag ${controller_tag}; leave it empty so the template falls back to appVersion"
+for pair in "proxy.image.tag:${proxy_tag}" "controller.image.tag:${controller_tag}" ; do
+	key=${pair%%:*}
+	tag=${pair#*:}
+	case "${tag}" in
+		"${line_base}"-gs.[0-9]*) ;;
+		*) note "${chart}/values.yaml pins ${key} '${tag}'; expected a release of the agentgateway line for the vendored ${chart_version}: ${line_base}-gs.N" ;;
+	esac
+done
+if [ "${proxy_tag}" != "${controller_tag}" ] ; then
+	note "${chart}/values.yaml pins proxy.image.tag ${proxy_tag} but controller.image.tag ${controller_tag}; both images come from one release of the line"
 fi
 
 if yq -e '.dependencies' "${chart}/Chart.yaml" >/dev/null 2>&1 ; then

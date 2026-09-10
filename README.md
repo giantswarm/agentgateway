@@ -93,12 +93,18 @@ version over `appVersion` at package time. The generated chart jobs get it
 through `gen.ci.keepChartAppVersion`; the `agentgateway-crds` jobs in
 `.circleci/custom.yml` set it directly.
 
-Both image tags are still pinned in `values.yaml` and bumped by Renovate from a
+Both image tags are pinned in `values.yaml` and bumped by Renovate from a
 marker comment, rather than left to the `.Chart.AppVersion` fallback in the
-upstream template. The pin is the explicit contract: it does not depend on a CI
-parameter staying set, and `make verify-sync` keeps both tags equal to the
-vendored version, so the tag and `appVersion` cannot drift apart.
-
-The 1.x wrapper needed neither, because the fallback read the *subchart's*
-`Chart.yaml`, which app-build-suite never rewrote. The flattened chart has only
-one.
+upstream template. They name a **release of the Giant Swarm line of
+agentgateway**, [giantswarm/agentgateway-upstream](https://github.com/giantswarm/agentgateway-upstream)
+(its `FORK.md`): the vendored upstream release, rebuilt, scanned and signed
+there and tagged `vX.Y.(Z+1)-gs.N` for the pin `vX.Y.Z` — for the vendored
+`v1.5.0`, `v1.5.1-gs.N` — and mirrored into gsoci by the
+[retagger](https://github.com/giantswarm/retagger) next to upstream's tags.
+`appVersion` stays upstream's release (what the chart is), the image tags say
+which build of it runs. `make verify-sync` holds both tags to one release of the
+line whose base is the next patch of the vendored version, so the tags and
+`appVersion` cannot drift apart; Renovate follows the line's releases only
+(`renovate-custom.json5`). A patch the platform needs in agentgateway is carried
+on the line and reaches this chart as the next `-gs.N` release, with no change
+here beyond the tags.
