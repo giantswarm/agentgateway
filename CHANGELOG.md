@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- changed: controller and proxy images move to the agentgateway line's release `v1.5.1-gs.3`, which carries the fix for `GRPCRoute` method matches: a service-only match is translated to a path prefix (it was an exact match on `/<service>/`, a path no request has, so such rules never matched) and `type: RegularExpression` is honoured (giantswarm/agentgateway-upstream#6). `gs.2` (the Substrate-side CONNECT-time actor authorization) is included; it changes nothing for the gateway path.
 - changed: Renovate proposes an upstream release as one bump (both charts and the proxy image tag) on a `renovate/vendir/` branch, and the sync-from-upstream workflow completes it: the Giant Swarm delta is re-applied and the reviewable PR opens from `main#update-chart`, so a bump no longer needs manual `make sync` and pre-commit commits. Renovate's own PR waits for Dependency Dashboard approval, so a bump is proposed once.
 - fixed: the reviewer diffs under `diffs/` are always plain unified patches, independent of the developer's git external diff tool.
 
