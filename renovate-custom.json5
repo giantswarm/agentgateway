@@ -4,11 +4,12 @@
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   customManagers: [
     {
-      // The proxy tag is pinned in values.yaml from a marker comment: the
-      // upstream template has no fallback for it, so with no tag the
-      // AGW_PROXY_IMAGE_TAG env var is not set at all. The controller tag falls
-      // back to .Chart.AppVersion, which sync/patches/chart-yaml holds at the
-      // vendored version, so it needs no marker.
+      // Both image tags are pinned in values.yaml from a marker comment: they
+      // name a release of the Giant Swarm line of agentgateway
+      // (github.com/giantswarm/agentgateway-upstream, vX.Y.Z-gs.N in gsoci),
+      // and the upstream template's fallbacks would name upstream's own build
+      // (controller: .Chart.AppVersion) or nothing at all (proxy: with no tag
+      // the AGW_PROXY_IMAGE_TAG env var is not set).
       //
       // Both files are listed on purpose. sync/patches/values/values.yaml is
       // the source of truth and helm/agentgateway/values.yaml is the copy that
@@ -45,21 +46,44 @@
       allowedVersions: '< 2.0.0',
     },
     {
-      // One Renovate branch per upstream release. `make verify-sync` requires
-      // the CRD chart to track the controller chart and `proxy.image.tag` to
-      // equal the vendored version, so a bump of only one of the three can
-      // never go green (#37 had to fold #38 and #41 in by hand). The branch
-      // keeps the renovate/vendir/ prefix because the sync-from-upstream
-      // workflow triggers on it, re-applies the Giant Swarm delta and opens
-      // the reviewable PR from `main#update-chart`; Renovate's own PR waits
-      // for Dependency Dashboard approval so the bump is not proposed twice.
+      // One Renovate branch per upstream release of the charts. `make
+      // verify-sync` requires the CRD chart to track the controller chart, so
+      // a bump of only one of the two can never go green (#37 had to fold #38
+      // and #41 in by hand). The branch keeps the renovate/vendir/ prefix
+      // because the sync-from-upstream workflow triggers on it, re-applies the
+      // Giant Swarm delta and opens the reviewable PR from `main#update-chart`;
+      // Renovate's own PR waits for Dependency Dashboard approval so the bump
+      // is not proposed twice. The gsoci images are not part of this group:
+      // they follow the agentgateway line's releases (next rule), whose first
+      // release for a new upstream version exists only after that version was
+      // vendored here.
       matchPackageNames: [
         '/(^|[/])agentgateway$/',
         '/(^|[/])agentgateway-crds$/',
+        '!/^gsoci[.]azurecr[.]io[/]/',
       ],
       groupName: 'agentgateway',
       branchPrefix: 'renovate/vendir/',
       prCreation: 'approval',
+    },
+    {
+      // The controller and proxy images are releases of the Giant Swarm line of
+      // agentgateway, mirrored into gsoci by the retagger as vX.Y.Z-gs.N next
+      // to upstream's tags. Docker versioning reads "-gs.1" as a compatibility
+      // suffix and would never move between gs releases; semver-coerced reads
+      // it as a pre-release, so ignoreUnstable is off and allowedVersions keeps
+      // Renovate on the line's 1.x releases — never on upstream's own tag of
+      // the version the line anticipates. `make verify-sync` holds both tags to
+      // one release whose base is the next patch of the vendored version.
+      matchDatasources: ['docker'],
+      matchPackageNames: [
+        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway$/',
+        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway-controller$/',
+      ],
+      versioning: 'semver-coerced',
+      ignoreUnstable: false,
+      groupName: 'agentgateway line',
+      allowedVersions: '/^v?1[.][0-9]+[.][0-9]+-gs[.][0-9]+$/',
     },
   ],
 }
