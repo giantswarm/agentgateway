@@ -2,7 +2,7 @@
 imagePullSecrets: []
 
 # -- Additional labels to add to all resources created by the Helm chart.
-commonLabels: {}
+commonLabels: {}  # @schema additionalProperties: true
 
 # -- Add a name to the default Helm base release, which is 'agentgateway'. If you set 'nameOverride: "foo", the name of the resources that the Helm release creates become 'agentgateway-foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace.
 nameOverride: ""
@@ -15,7 +15,7 @@ serviceAccount:
   # -- Specify whether a service account should be created.
   create: true
   # -- Add annotations to the service account.
-  annotations: {}
+  annotations: {}  # @schema additionalProperties: true
   # -- Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.
   name: ""
 
@@ -25,7 +25,7 @@ rbac:
   gatewayNamespaces: []
 
 # -- Add annotations to the agentgateway deployment.
-deploymentAnnotations: {}
+deploymentAnnotations: {}  # @schema additionalProperties: true
 
 # -- Add annotations to the agentgateway pods.
 podAnnotations:  # @schema additionalProperties: true
@@ -33,7 +33,7 @@ podAnnotations:  # @schema additionalProperties: true
   application.giantswarm.io/team: bumblebee
 
 # -- Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).
-podLabels: {}
+podLabels: {}  # @schema additionalProperties: true
 
 # -- Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000.
 podSecurityContext:  # @schema additionalProperties: true
@@ -61,13 +61,19 @@ resources:  # @schema additionalProperties: true
     memory: 512Mi
 
 # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
-nodeSelector: {}
+nodeSelector: {}  # @schema additionalProperties: true
 
 # -- Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.
 tolerations: []
 
 # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
-affinity: {}
+affinity: {}  # @schema additionalProperties: true
+
+# -- Configure how controller pods are spread across topology domains, such as nodes or zones.
+topologySpreadConstraints: []
+
+# -- Set the pod DNS configuration, such as 'options: [{name: ndots, value: "3"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.
+dnsConfig: {}  # @schema additionalProperties: true
 
 # -- Configure the agentgateway control plane deployment.
 controller:
@@ -104,9 +110,9 @@ controller:
       health: 9093
       metrics: 9092
     # -- Service annotations.
-    annotations: {}
+    annotations: {}  # @schema additionalProperties: true
     # -- Extra labels for the Service.
-    extraLabels: {}
+    extraLabels: {}  # @schema additionalProperties: true
     # -- Cluster IP address.
     clusterIP: ""
     # -- Cluster IPs for dual-stack.
@@ -130,7 +136,7 @@ controller:
     # -- Session affinity.
     sessionAffinity: ""
     # -- Session affinity configuration.
-    sessionAffinityConfig: {}
+    sessionAffinityConfig: {}  # @schema additionalProperties: true
     # -- IP families.
     ipFamilies: []
     # -- IP family policy.
@@ -152,7 +158,7 @@ controller:
   #       secretKeyRef:
   #         name: agentgateway-secrets
   #         key: apiToken
-  extraEnv: {}
+  extraEnv: {}  # @schema additionalProperties: true
   # -- Add extra sidecar containers to the controller pod.
   extraContainers: []
   # -- Add extra volume mounts to the controller container.
@@ -172,14 +178,14 @@ controller:
   #   type: RollingUpdate
   #   rollingUpdate:
   #     maxSurge: 100%
-  strategy: {}
+  strategy: {}  # @schema additionalProperties: true
   # -- Set pod disruption budget for the controller. Note that this does not
   #    affect the data plane.
   # E.g.:
   #
   # podDisruptionBudget:
   #   minAvailable: 100%
-  podDisruptionBudget: {}
+  podDisruptionBudget: {}  # @schema additionalProperties: true
   # -- Set horizontal pod autoscaler for the controller. Note that this does not
   #    affect the data plane. The scaleTargetRef is automatically configured to
   #    target the controller deployment.
@@ -195,7 +201,7 @@ controller:
   #         target:
   #           type: Utilization
   #           averageUtilization: 80
-  horizontalPodAutoscaler: {}
+  horizontalPodAutoscaler: {}  # @schema additionalProperties: true
   # -- Set vertical pod autoscaler for the controller. Note that this does not
   #    affect the data plane. The targetRef is automatically configured to
   #    target the controller deployment.
@@ -210,7 +216,7 @@ controller:
   #         minAllowed:
   #           cpu: 100m
   #           memory: 128Mi
-  verticalPodAutoscaler: {}
+  verticalPodAutoscaler: {}  # @schema additionalProperties: true
 
 # -- Configure the agentgateway data plane deployment.
 proxy:
@@ -257,7 +263,7 @@ discoveryNamespaceSelectors: []
 #      agentgateway:
 #        name: shared-gwp
 #        namespace: kgateway-system
-gatewayClassParametersRefs: {}
+gatewayClassParametersRefs: {}  # @schema additionalProperties: true
 
 # -- Name of the primary GatewayClass the controller creates and manages.
 #    Leave empty to use the built-in default ("agentgateway"). Sets AGW_AGENTGATEWAY_CLASS_NAME.
@@ -300,7 +306,7 @@ monitoring:
     # -- Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.
     interval: 15s
     # -- Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).
-    extraLabels: {}
+    extraLabels: {}  # @schema additionalProperties: true
 
   proxy:
     podMonitor:
@@ -312,7 +318,7 @@ monitoring:
     gatewayClassNames:
       - agentgateway
     # -- Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.
-    namespaceSelector: {}
+    namespaceSelector: {}  # @schema additionalProperties: true
 
   grafanaDashboard:
     # -- Create the Grafana dashboard ConfigMap.

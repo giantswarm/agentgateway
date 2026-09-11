@@ -1,0 +1,109 @@
+# One key inside every free-form object of the chart, plus the two root keys
+# the deployment template reads that values.yaml did not declare
+# (topologySpreadConstraints, dnsConfig).
+#
+# helm/agentgateway/values.schema.json is generated from values.yaml with
+# additionalProperties: false on every object. An object that is `{}` there
+# gets that strictness with no properties at all, so without its `# @schema
+# additionalProperties: true` annotation in sync/patches/values/values.yaml an
+# operator's `controller.podDisruptionBudget.maxUnavailable: 1` failed the
+# install with "additional properties 'maxUnavailable' not allowed".
+# `make verify-values-surface` renders the chart with this file and checks each
+# value reaches its manifest. Label and annotation values name the node they
+# exercise, so the rendered chart can be grepped for the exact node that let
+# the value through.
+
+commonLabels:
+  giantswarm.io/surface-common: common-labels
+
+serviceAccount:
+  annotations:
+    giantswarm.io/surface: service-account-annotations
+
+deploymentAnnotations:
+  giantswarm.io/surface: deployment-annotations
+
+podLabels:
+  giantswarm.io/surface: pod-labels
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              agentgateway: agentgateway
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        agentgateway: agentgateway
+
+dnsConfig:
+  options:
+    - name: ndots
+      value: "2"
+
+controller:
+  service:
+    annotations:
+      giantswarm.io/surface: service-annotations
+    extraLabels:
+      giantswarm.io/surface-service: service-extra-labels
+    sessionAffinity: ClientIP
+    sessionAffinityConfig:
+      clientIP:
+        timeoutSeconds: 10800
+  extraEnv:
+    LOG_FORMAT: json
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  podDisruptionBudget:
+    maxUnavailable: 1
+  horizontalPodAutoscaler:
+    minReplicas: 2
+    maxReplicas: 4
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 80
+  verticalPodAutoscaler:
+    updatePolicy:
+      updateMode: Auto
+    resourcePolicy:
+      containerPolicies:
+        - containerName: "*"
+          minAllowed:
+            cpu: 50m
+            memory: 64Mi
+
+gatewayClassParametersRefs:
+  agentgateway:
+    name: shared-gwp
+    namespace: agentgateway-system
+
+monitoring:
+  # The ServiceMonitor and PodMonitor templates are gated on this flag alone
+  # (no API-version check), so the two maps below reach a manifest.
+  enabled: true
+  serviceMonitor:
+    extraLabels:
+      giantswarm.io/surface-monitor: service-monitor-extra-labels
+  proxy:
+    namespaceSelector:
+      matchNames:
+        - agentgateway-proxies

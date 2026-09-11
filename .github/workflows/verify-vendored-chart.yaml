@@ -17,6 +17,15 @@
 #     drifting apart
 #
 # It needs no network: it compares files already in the tree.
+#
+# `make verify-values-surface` then renders the chart with
+# tests/values/surface.yaml, which sets a key inside every free-form object of
+# the chart (the PDB, the rollout strategy, the HPA and VPA specs, affinity,
+# the label and annotation maps, extraEnv, ...). The generated
+# values.schema.json is strict, and an object that is `{}` in values.yaml
+# admits no key at all unless it carries a `# @schema additionalProperties:
+# true` annotation, so a lost annotation fails here instead of at an
+# operator's install. The target also checks an unknown key is still rejected.
 name: Verify vendored chart
 
 on:
@@ -27,6 +36,7 @@ on:
       - 'vendir.yml'
       - 'vendir.lock.yml'
       - 'Makefile.custom.mk'
+      - 'tests/values/**'
   push:
     branches:
       - main
@@ -37,3 +47,4 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: make verify-sync
+      - run: make verify-values-surface
