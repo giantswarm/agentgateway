@@ -6,7 +6,7 @@
         "affinity": {
             "type": "object",
             "description": "Set affinity rules for pod scheduling, such as 'nodeAffinity:'.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "agentgatewayModels": {
             "type": "object",
@@ -53,7 +53,7 @@
         "commonLabels": {
             "type": "object",
             "description": "Additional labels to add to all resources created by the Helm chart.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "controller": {
             "type": "object",
@@ -67,7 +67,7 @@
                 "extraEnv": {
                     "type": "object",
                     "description": "Add extra environment variables to the controller container. Supports either a direct scalar value: extraEnv: LOG_FORMAT: json Or Kubernetes valueFrom sources: extraEnv: API_TOKEN: valueFrom: secretKeyRef: name: agentgateway-secrets key: apiToken",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "extraVolumeMounts": {
                     "type": "array",
@@ -80,7 +80,7 @@
                 "horizontalPodAutoscaler": {
                     "type": "object",
                     "description": "Set horizontal pod autoscaler for the controller. Note that this does not affect the data plane. The scaleTargetRef is automatically configured to target the controller deployment. E.g.:  horizontalPodAutoscaler: minReplicas: 1 maxReplicas: 5 metrics: - type: Resource resource: name: cpu target: type: Utilization averageUtilization: 80",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "image": {
                     "type": "object",
@@ -112,7 +112,7 @@
                 "podDisruptionBudget": {
                     "type": "object",
                     "description": "Set pod disruption budget for the controller. Note that this does not affect the data plane. E.g.:  podDisruptionBudget: minAvailable: 100%",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "priorityClassName": {
                     "type": "string",
@@ -138,7 +138,7 @@
                         "annotations": {
                             "type": "object",
                             "description": "Service annotations.",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "clusterIP": {
                             "type": "string",
@@ -167,7 +167,7 @@
                         "extraLabels": {
                             "type": "object",
                             "description": "Extra labels for the Service.",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "healthCheckNodePort": {
                             "type": "null",
@@ -224,7 +224,7 @@
                         "sessionAffinityConfig": {
                             "type": "object",
                             "description": "Session affinity configuration.",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "trafficDistribution": {
                             "type": "string",
@@ -235,12 +235,12 @@
                 "strategy": {
                     "type": "object",
                     "description": "Change the rollout strategy from the Kubernetes default of a RollingUpdate with 25% maxUnavailable, 25% maxSurge. E.g., to recreate pods, minimizing resources for the rollout but causing downtime: strategy: type: Recreate E.g., to roll out as a RollingUpdate but with non-default parameters: strategy: type: RollingUpdate rollingUpdate: maxSurge: 100%",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "verticalPodAutoscaler": {
                     "type": "object",
                     "description": "Set vertical pod autoscaler for the controller. Note that this does not affect the data plane. The targetRef is automatically configured to target the controller deployment. E.g.:  verticalPodAutoscaler: updatePolicy: updateMode: Auto resourcePolicy: containerPolicies: - containerName: \"*\" minAllowed: cpu: 100m memory: 128Mi",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "xds": {
                     "type": "object",
@@ -262,11 +262,16 @@
         "deploymentAnnotations": {
             "type": "object",
             "description": "Add annotations to the agentgateway deployment.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "discoveryNamespaceSelectors": {
             "type": "array",
             "description": "List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/install/advanced/#namespace-discovery."
+        },
+        "dnsConfig": {
+            "type": "object",
+            "description": "Set the pod DNS configuration, such as 'options: [{name: ndots, value: \"3\"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.",
+            "additionalProperties": true
         },
         "fullnameOverride": {
             "type": "string",
@@ -279,7 +284,7 @@
         "gatewayClassParametersRefs": {
             "type": "object",
             "description": "Map of GatewayClass names to GatewayParameters references that will be set on the default GatewayClasses managed by kgateway. Each entry must define both the name and namespace of the GatewayParameters resource. The default GatewayClasses managed by kgateway are: - agentgateway Example: gatewayClassParametersRefs: agentgateway: name: shared-gwp namespace: kgateway-system",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "gcpProject": {
             "type": "string"
@@ -400,7 +405,7 @@
                         "namespaceSelector": {
                             "type": "object",
                             "description": "Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "podMonitor": {
                             "type": "object",
@@ -425,7 +430,7 @@
                         "extraLabels": {
                             "type": "object",
                             "description": "Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "interval": {
                             "type": "string",
@@ -442,7 +447,7 @@
         "nodeSelector": {
             "type": "object",
             "description": "Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "podAnnotations": {
             "type": "object",
@@ -460,7 +465,7 @@
         "podLabels": {
             "type": "object",
             "description": "Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "podSecurityContext": {
             "type": "object",
@@ -595,7 +600,7 @@
                 "annotations": {
                     "type": "object",
                     "description": "Add annotations to the service account.",
-                    "additionalProperties": false
+                    "additionalProperties": true
                 },
                 "create": {
                     "type": "boolean",
@@ -613,6 +618,10 @@
         "tolerations": {
             "type": "array",
             "description": "Set tolerations for pod scheduling, such as 'key: \"nvidia.com/gpu\"'."
+        },
+        "topologySpreadConstraints": {
+            "type": "array",
+            "description": "Configure how controller pods are spread across topology domains, such as nodes or zones."
         }
     }
 }

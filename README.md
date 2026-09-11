@@ -69,6 +69,16 @@ port it into `sync/patches/values/values.yaml` and run `make sync` again.
 `make verify-sync` fails the PR when the tree does not match what `make sync`
 produces. CI runs it on every change under `helm/`, `sync/` or `vendir.yml`.
 
+`make verify-values-surface` renders `tests/values/surface.yaml`, a values file
+that sets a key inside every free-form object the chart exposes (the pod
+disruption budget, the rollout strategy, the autoscalers, affinity, the label
+and annotation maps, `extraEnv`, …), and fails the PR when the generated schema
+rejects one of them — or admits an unknown key. The schema generator closes
+every `{}` object, so such a value needs the `# @schema additionalProperties:
+true` marker in `sync/patches/values/values.yaml`. CI runs both checks on every
+change under `helm/`, `sync/`, `tests/values/`, `vendir.yml` or
+`Makefile.custom.mk`.
+
 ### The Giant Swarm delta
 
 | Patch | What it does |
