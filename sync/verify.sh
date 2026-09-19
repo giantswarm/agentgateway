@@ -56,23 +56,22 @@ done
 
 # Both image tags are releases of the Giant Swarm line of agentgateway
 # (github.com/giantswarm/agentgateway-upstream, FORK.md "Publishing"): the
-# vendored upstream release rebuilt there and tagged vX.Y.(Z+1)-gs.N, where
-# vX.Y.Z is the line's pin — so the tag's base must be the next patch of the
-# vendored version, and both images come from the same release. The proxy tag
-# has no appVersion fallback in the upstream template (with no tag the
+# line's own stable semver, decoupled from the vendored chart's version as the
+# RFC on semantic versioning of upstream software lays down — which upstream
+# pin a release carries is documented in the line's FORK.md, not encoded in
+# the tag. So the check is the shape (a stable X.Y.Z: no v, no suffix, never
+# empty) and that both images come from one release. The proxy tag has no
+# appVersion fallback in the upstream template (with no tag the
 # AGW_PROXY_IMAGE_TAG env var is not set at all); the controller tag must not be
 # left to the appVersion fallback either, because that names upstream's build.
-IFS=. read -r vendored_major vendored_minor vendored_patch <<<"${chart_version#v}"
-line_base="v${vendored_major}.${vendored_minor}.$((vendored_patch + 1))"
 proxy_tag=$(yq -r '.proxy.image.tag' "${chart}/values.yaml")
 controller_tag=$(yq -r '.controller.image.tag' "${chart}/values.yaml")
 for pair in "proxy.image.tag:${proxy_tag}" "controller.image.tag:${controller_tag}" ; do
 	key=${pair%%:*}
 	tag=${pair#*:}
-	case "${tag}" in
-		"${line_base}"-gs.[0-9]*) ;;
-		*) note "${chart}/values.yaml pins ${key} '${tag}'; expected a release of the agentgateway line for the vendored ${chart_version}: ${line_base}-gs.N" ;;
-	esac
+	if ! [[ "${tag}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ; then
+		note "${chart}/values.yaml pins ${key} '${tag}'; expected a stable release of the agentgateway line (X.Y.Z)"
+	fi
 done
 if [ "${proxy_tag}" != "${controller_tag}" ] ; then
 	note "${chart}/values.yaml pins proxy.image.tag ${proxy_tag} but controller.image.tag ${controller_tag}; both images come from one release of the line"
@@ -86,6 +85,12 @@ fi
 # install then fails late and reads like a flake.
 if ! grep -q 'regexReplaceAll "\[^a-zA-Z0-9\]+\$"' "${chart}/templates/_helpers.tpl" ; then
 	note "${chart}/templates/_helpers.tpl lost the chart-label fix; run 'make sync'"
+fi
+
+# Without the image-tag fix the upstream helper prepends a v to the bare X.Y.Z
+# tag of the line's images, and the controller image it renders does not exist.
+if ! grep -q 'sync/patches/image-tag' "${chart}/templates/_helpers.tpl" ; then
+	note "${chart}/templates/_helpers.tpl lost the image-tag fix; run 'make sync'"
 fi
 
 # app-build-suite's C0001 validator rejects a chart whose _helpers.tpl carries

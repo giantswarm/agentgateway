@@ -75,6 +75,7 @@ produces. CI runs it on every change under `helm/`, `sync/` or `vendir.yml`.
 |---|---|
 | `sync/patches/values/` | Copies the repo-owned `values.yaml` over the vendored one. |
 | `sync/patches/chart-label/` | Strips trailing non-alphanumerics from the `helm.sh/chart` label. The label now carries our own chart version, and a branch build's long git-replaced version can otherwise truncate into an invalid label. |
+| `sync/patches/image-tag/` | Makes the `agentgateway.imageTag` helper use the configured controller tag as-is. Upstream prepends a `v` to a bare semver tag because its own images carry one; the line's images are tagged bare `X.Y.Z`, so the unpatched helper renders a tag that does not exist. |
 | `sync/patches/team-label/` | Adds `application.giantswarm.io/team` to the upstream common-labels helper. app-build-suite's Giant Swarm validator (C0001) requires it in `templates/_helpers.tpl`, which the 1.x wrapper owned and the flattened chart takes from upstream. |
 | `sync/patches/chart-yaml/` | Keeps both charts' `appVersion` in step with the vendored versions. |
 | `sync/patches/crds/` | Writes the pristine CRDs into both delivery paths and injects `helm.sh/resource-policy: keep`. |
@@ -97,14 +98,20 @@ Both image tags are pinned in `values.yaml` and bumped by Renovate from a
 marker comment, rather than left to the `.Chart.AppVersion` fallback in the
 upstream template. They name a **release of the Giant Swarm line of
 agentgateway**, [giantswarm/agentgateway-upstream](https://github.com/giantswarm/agentgateway-upstream)
-(its `FORK.md`): the vendored upstream release, rebuilt, scanned and signed
-there and tagged `vX.Y.(Z+1)-gs.N` for the pin `vX.Y.Z` — for the vendored
-`v1.5.0`, `v1.5.1-gs.N` — and mirrored into gsoci by the
-[retagger](https://github.com/giantswarm/retagger) next to upstream's tags.
-`appVersion` stays upstream's release (what the chart is), the image tags say
-which build of it runs. `make verify-sync` holds both tags to one release of the
-line whose base is the next patch of the vendored version, so the tags and
-`appVersion` cannot drift apart; Renovate follows the line's releases only
-(`renovate-custom.json5`). A patch the platform needs in agentgateway is carried
-on the line and reaches this chart as the next `-gs.N` release, with no change
-here beyond the tags.
+(its `FORK.md`, "Publishing"): the line rebuilds, scans and signs its pin of
+upstream and publishes it from CircleCI under its own nested names,
+`gsoci.azurecr.io/giantswarm/agentgateway-upstream/controller` and
+`…/agentgateway-upstream/agentgateway`, with versions of its own — a stable
+`X.Y.Z`, decoupled from upstream's, as the RFC on semantic versioning of
+upstream software lays down; which upstream pin a release carries is
+documented in the line's `FORK.md`, not encoded in the tag. The flattened
+`giantswarm/agentgateway` and `giantswarm/agentgateway-controller` hold the
+[retagger](https://github.com/giantswarm/retagger)'s copies of upstream's own
+releases and are not what this chart runs. `appVersion` stays upstream's
+release (what the chart is), the image tags say which build of the line runs
+it. `make verify-sync` holds both tags to one stable release of the line;
+Renovate follows the line's releases within its current major
+(`renovate-custom.json5`), a new major of the line being a change to follow by
+hand. A patch the platform needs in agentgateway is carried on the line and
+reaches this chart as the line's next release, with no change here beyond the
+tags.

@@ -6,8 +6,9 @@
     {
       // Both image tags are pinned in values.yaml from a marker comment: they
       // name a release of the Giant Swarm line of agentgateway
-      // (github.com/giantswarm/agentgateway-upstream, vX.Y.Z-gs.N in gsoci),
-      // and the upstream template's fallbacks would name upstream's own build
+      // (github.com/giantswarm/agentgateway-upstream, X.Y.Z under
+      // gsoci.azurecr.io/giantswarm/agentgateway-upstream/), and the upstream
+      // template's fallbacks would name upstream's own build
       // (controller: .Chart.AppVersion) or nothing at all (proxy: with no tag
       // the AGW_PROXY_IMAGE_TAG env var is not set).
       //
@@ -28,20 +29,21 @@
   packageRules: [
     {
       // The standalone agentgateway product is on the v1.x line: the charts
-      // (cr.agentgateway.dev/charts/agentgateway and .../agentgateway-crds) and
-      // the gsoci-mirrored proxy image track
-      // github.com/agentgateway/agentgateway releases. The v2.x tags in
+      // (cr.agentgateway.dev/charts/agentgateway and .../agentgateway-crds)
+      // track github.com/agentgateway/agentgateway releases. The v2.x tags in
       // cr.agentgateway.dev are the deprecated kgateway-based control plane, a
       // different product. Renovate sees 2.2.1 > 1.4.1 and would bump across
       // products, so cap at < 2.0.0.
       // Matched by regex, anchored on the trailing path segment. Renovate names
-      // an image from a custom manager with its registry included
-      // (gsoci.azurecr.io/giantswarm/agentgateway), so a bare
+      // an image from a custom manager with its registry included, so a bare
       // `giantswarm/...` entry silently matches nothing and the cap does not
-      // apply -- which is how PR #34 proposed v1.4.1 -> v2.2.1.
+      // apply -- which is how PR #34 proposed v1.4.1 -> v2.2.1. The gsoci
+      // images are excluded: the line's data-plane image also ends in
+      // /agentgateway, and its versions are the line's own (the last rule).
       matchPackageNames: [
         '/(^|[/])agentgateway$/',
         '/(^|[/])agentgateway-crds$/',
+        '!/^gsoci[.]azurecr[.]io[/]/',
       ],
       allowedVersions: '< 2.0.0',
     },
@@ -68,22 +70,21 @@
     },
     {
       // The controller and proxy images are releases of the Giant Swarm line of
-      // agentgateway, mirrored into gsoci by the retagger as vX.Y.Z-gs.N next
-      // to upstream's tags. Docker versioning reads "-gs.1" as a compatibility
-      // suffix and would never move between gs releases; semver-coerced reads
-      // it as a pre-release, so ignoreUnstable is off and allowedVersions keeps
-      // Renovate on the line's 1.x releases — never on upstream's own tag of
-      // the version the line anticipates. `make verify-sync` holds both tags to
-      // one release whose base is the next patch of the vendored version.
+      // agentgateway, published from its CircleCI pipeline under the line's own
+      // nested gsoci path with the line's own stable semver, decoupled from
+      // upstream's versions (which upstream pin a release carries is documented
+      // in the line's FORK.md). The first decoupled release is 2.0.0;
+      // allowedVersions keeps Renovate on that major, because a new major of
+      // the line is a change consumers follow by hand. `make verify-sync` holds
+      // both tags to one stable release.
       matchDatasources: ['docker'],
       matchPackageNames: [
-        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway$/',
-        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway-controller$/',
+        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway-upstream[/]agentgateway$/',
+        '/^gsoci[.]azurecr[.]io[/]giantswarm[/]agentgateway-upstream[/]controller$/',
       ],
-      versioning: 'semver-coerced',
-      ignoreUnstable: false,
+      versioning: 'semver',
       groupName: 'agentgateway line',
-      allowedVersions: '/^v?1[.][0-9]+[.][0-9]+-gs[.][0-9]+$/',
+      allowedVersions: '>=2.0.0 <3.0.0',
     },
   ],
 }
