@@ -36,7 +36,6 @@ vendir sync
 
 ./sync/patches/values/patch.sh
 ./sync/patches/chart-label/patch.sh
-./sync/patches/image-tag/patch.sh
 ./sync/patches/team-label/patch.sh
 ./sync/patches/chart-yaml/patch.sh
 ./sync/patches/crds/patch.sh

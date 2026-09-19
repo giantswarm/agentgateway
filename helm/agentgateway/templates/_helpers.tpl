@@ -81,11 +81,18 @@ Supported values: "standard" or "strict" (case-insensitive).
 {{- end }}
 
 {{/*
-Get the image tag as configured. Upstream prepends a 'v' to a bare semver tag
-because its own images carry one; the images this chart runs are releases of
-the Giant Swarm line of agentgateway, tagged bare X.Y.Z, so the tag is used
-as-is (sync/patches/image-tag).
+Get the image tag with 'v' prefix for semver tags.
+If the input already starts with 'v', return it as-is.
+If the input looks like a semver version (e.g., "1.2.3"), prepend 'v'.
+Otherwise (e.g., "latest", "dev"), return it unchanged.
 */}}
 {{- define "agentgateway.imageTag" -}}
-{{- . -}}
+{{- $tag := . -}}
+{{- if hasPrefix "v" $tag -}}
+{{- $tag -}}
+{{- else if regexMatch "^[0-9]+\\.[0-9]+\\..*$" $tag -}}
+{{- printf "v%s" $tag -}}
+{{- else -}}
+{{- $tag -}}
+{{- end -}}
 {{- end }}

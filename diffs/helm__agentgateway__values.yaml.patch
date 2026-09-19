@@ -1,5 +1,5 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index f089fc3..75fe5fd 100644
+index f089fc3..b40f56b 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
 @@ -19,7 +19,6 @@ serviceAccount:
@@ -72,50 +72,36 @@ index f089fc3..75fe5fd 100644
    # -- Set the priority class name for the controller pod.
    priorityClassName: ""
    # -- Set the log level for the controller.
-@@ -75,13 +80,21 @@ controller:
+@@ -75,12 +80,13 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
 -    registry: ""
--    # -- Set the image repository for the controller.
--    repository: controller
 +    registry: gsoci.azurecr.io
-+    # -- Set the image repository for the controller: the Giant Swarm line of
-+    # agentgateway (github.com/giantswarm/agentgateway-upstream) publishes
-+    # under its own nested path; the flattened giantswarm/agentgateway-controller
-+    # holds copies of upstream's own builds.
-+    repository: giantswarm/agentgateway-upstream/controller
+     # -- Set the image repository for the controller.
+-    repository: controller
++    repository: giantswarm/agentgateway-controller
      # -- Set the image pull policy for the controller.
      pullPolicy: ""
 -    # -- Set the image tag for the controller.
--    tag: ""
-+    # -- Set the image tag for the controller. A release of the Giant Swarm
-+    # line of agentgateway: the line's own semver, decoupled from the vendored
-+    # chart's version (which upstream pin a release carries is documented in
-+    # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
-+    # upstream's own build.
-+    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
++    # -- Set the image tag for the controller. Empty falls back to
++    # .Chart.AppVersion, the vendored upstream release.
+     tag: ""
    # -- Configure the controller service.
    service:
-     # -- Create the controller Service.
-@@ -207,16 +220,19 @@ proxy:
+@@ -207,16 +213,17 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.
 -    registry: ""
--    # -- Set the default image repository.
--    repository: agentgateway
--    # -- Set the default image tag.
--    tag: ""
 +    registry: gsoci.azurecr.io
-+    # -- Set the default image repository: the data-plane proxy of the Giant
-+    # Swarm line of agentgateway, under the line's nested path.
-+    repository: giantswarm/agentgateway-upstream/agentgateway
-+    # -- Set the default image tag: the same release of the Giant Swarm line
-+    # of agentgateway as the controller.
-+    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
+     # -- Set the default image repository.
+-    repository: agentgateway
++    repository: giantswarm/agentgateway
+     # -- Set the default image tag.
+-    tag: ""
++    # renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io
++    tag: v1.5.0
 
  # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
  image:
