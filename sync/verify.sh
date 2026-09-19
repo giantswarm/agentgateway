@@ -88,6 +88,13 @@ if ! grep -q 'regexReplaceAll "\[^a-zA-Z0-9\]+\$"' "${chart}/templates/_helpers.
 	note "${chart}/templates/_helpers.tpl lost the chart-label fix; run 'make sync'"
 fi
 
+# Without the image-tag fix the upstream helper prepends a v to a bare X.Y.Z
+# controller tag (the shape of the agentgateway line's releases), and the
+# image it renders does not exist.
+if ! grep -q 'sync/patches/image-tag' "${chart}/templates/_helpers.tpl" ; then
+	note "${chart}/templates/_helpers.tpl lost the image-tag fix; run 'make sync'"
+fi
+
 # app-build-suite's C0001 validator rejects a chart whose _helpers.tpl carries
 # no team label, so a missing line fails the release, not just the label.
 for f in "${chart}/templates/_helpers.tpl" "${crds_chart}/templates/_helpers.tpl" ; do

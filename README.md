@@ -75,6 +75,7 @@ produces. CI runs it on every change under `helm/`, `sync/` or `vendir.yml`.
 |---|---|
 | `sync/patches/values/` | Copies the repo-owned `values.yaml` over the vendored one. |
 | `sync/patches/chart-label/` | Strips trailing non-alphanumerics from the `helm.sh/chart` label. The label now carries our own chart version, and a branch build's long git-replaced version can otherwise truncate into an invalid label. |
+| `sync/patches/image-tag/` | Makes the `agentgateway.imageTag` helper use the configured controller tag as-is. Upstream prepends a `v` to a bare semver tag because its own images carry one; the agentgateway line's releases are tagged bare `X.Y.Z`, so the unpatched helper renders a tag that does not exist. A tag that carries its `v` passes through unchanged. |
 | `sync/patches/team-label/` | Adds `application.giantswarm.io/team` to the upstream common-labels helper. app-build-suite's Giant Swarm validator (C0001) requires it in `templates/_helpers.tpl`, which the 1.x wrapper owned and the flattened chart takes from upstream. |
 | `sync/patches/chart-yaml/` | Keeps both charts' `appVersion` in step with the vendored versions. |
 | `sync/patches/crds/` | Writes the pristine CRDs into both delivery paths and injects `helm.sh/resource-policy: keep`. |
