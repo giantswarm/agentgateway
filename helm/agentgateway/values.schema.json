@@ -97,11 +97,11 @@
                         },
                         "repository": {
                             "type": "string",
-                            "description": "Set the image repository for the controller."
+                            "description": "Set the image repository for the controller: the Giant Swarm line of agentgateway (github.com/giantswarm/agentgateway-upstream) publishes under its own nested path; the flattened giantswarm/agentgateway-controller holds copies of upstream's own builds."
                         },
                         "tag": {
                             "type": "string",
-                            "description": "Set the image tag for the controller. A release of the Giant Swarm line of agentgateway (github.com/giantswarm/agentgateway-upstream: the vendored upstream release rebuilt, scanned and signed there, mirrored into gsoci by the retagger); empty would fall back to .Chart.AppVersion, upstream's own build. renovate: datasource=docker depName=giantswarm/agentgateway-controller registryUrl=https://gsoci.azurecr.io"
+                            "description": "Set the image tag for the controller. A release of the Giant Swarm line of agentgateway: the line's own semver, decoupled from the vendored chart's version (which upstream pin a release carries is documented in the line's FORK.md). Empty would fall back to .Chart.AppVersion, upstream's own build. renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io"
                         }
                     }
                 },
@@ -499,11 +499,11 @@
                         },
                         "repository": {
                             "type": "string",
-                            "description": "Set the default image repository."
+                            "description": "Set the default image repository: the data-plane proxy of the Giant Swarm line of agentgateway, under the line's nested path."
                         },
                         "tag": {
                             "type": "string",
-                            "description": "Set the default image tag: the same release of the Giant Swarm line of agentgateway as the controller. renovate: datasource=docker depName=giantswarm/agentgateway registryUrl=https://gsoci.azurecr.io"
+                            "description": "Set the default image tag: the same release of the Giant Swarm line of agentgateway as the controller. renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io"
                         }
                     }
                 }
