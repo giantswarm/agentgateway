@@ -1,5 +1,5 @@
 diff --git a/vendor/agentgateway/templates/_helpers.tpl b/helm/agentgateway/templates/_helpers.tpl
-index c8d69aa..1546e56 100644
+index c8d69aa..68901c5 100644
 --- a/vendor/agentgateway/templates/_helpers.tpl
 +++ b/helm/agentgateway/templates/_helpers.tpl
 @@ -27,7 +27,8 @@ If release name contains chart name it will be used as a full name.
@@ -19,4 +19,28 @@ index c8d69aa..1546e56 100644
 +application.giantswarm.io/team: {{ index .Chart.Annotations "io.giantswarm.application.team" | quote }}
  {{- with .Values.commonLabels | default dict }}
  {{ toYaml . }}
+ {{- end }}
+@@ -79,18 +81,11 @@ Supported values: "standard" or "strict" (case-insensitive).
+ {{- end }}
+
+ {{/*
+-Get the image tag with 'v' prefix for semver tags.
+-If the input already starts with 'v', return it as-is.
+-If the input looks like a semver version (e.g., "1.2.3"), prepend 'v'.
+-Otherwise (e.g., "latest", "dev"), return it unchanged.
++Get the image tag as configured. Upstream prepends a 'v' to a bare semver tag
++because its own images carry one; the images this chart runs are releases of
++the Giant Swarm line of agentgateway, tagged bare X.Y.Z, so the tag is used
++as-is (sync/patches/image-tag).
+ */}}
+ {{- define "agentgateway.imageTag" -}}
+-{{- $tag := . -}}
+-{{- if hasPrefix "v" $tag -}}
+-{{- $tag -}}
+-{{- else if regexMatch "^[0-9]+\\.[0-9]+\\..*$" $tag -}}
+-{{- printf "v%s" $tag -}}
+-{{- else -}}
+-{{- $tag -}}
+-{{- end -}}
++{{- . -}}
  {{- end }}
