@@ -15,8 +15,9 @@ cd "${repo_dir}"
 # Kubernetes label value admits a space, so they have to be annotations.
 # Without them the board lands in the organization's General folder.
 #
-# Filed upstream as agentgateway#3591. Delete this patch, and the values key it
-# reads, at the bump to a release that carries it.
+# Upstream as agentgateway#3591, merged 2026-09-21 as `6b15ebf0`. The newest
+# release, the v1.6.0-alpha.1 prerelease, predates the merge. Delete this patch,
+# and the values key it reads, at the bump to a release that carries it.
 #
 # The replacement asserts on the exact upstream text, so the sync fails loudly
 # if upstream reworks the ConfigMap.
