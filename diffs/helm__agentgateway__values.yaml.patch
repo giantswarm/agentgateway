@@ -1,5 +1,5 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index f089fc3..75fe5fd 100644
+index f089fc3..2227f4b 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
 @@ -19,7 +19,6 @@ serviceAccount:
@@ -125,3 +125,34 @@ index f089fc3..75fe5fd 100644
    # -- Set the default image tag.
    tag: ""
    # -- Set the default image pull policy.
+@@ -296,6 +312,13 @@ monitoring:
+       #    metrics port (15020) directly, without requiring a metrics port on the
+       #    provisioned Service.
+       enabled: true
++      # -- Pod labels copied onto the scraped proxy series. The bundled Grafana
++      #    dashboard discovers and filters gateways by the gateway name, which
++      #    reaches the series only through this list.
++      #    Rendered by sync/patches/podmonitor-labels, a backport of
++      #    agentgateway#3421; both go at the bump to a release that carries it.
++      podTargetLabels:  # @schema item: string
++        - gateway.networking.k8s.io/gateway-name
+     # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
+     gatewayClassNames:
+       - agentgateway
+@@ -305,6 +328,15 @@ monitoring:
+   grafanaDashboard:
+     # -- Create the Grafana dashboard ConfigMap.
+     enabled: true
+-    # -- Labels that the Grafana sidecar uses to discover dashboards.
++    # -- Labels that the Grafana sidecar uses to discover dashboards. The Giant
++    #    Swarm observability platform discovers a dashboard ConfigMap by
++    #    `app.giantswarm.io/kind: dashboard`, which belongs here.
+     labels:
+       grafana_dashboard: "1"
++    # -- Annotations on the dashboard ConfigMap. The Grafana organization and
++    #    folder the Giant Swarm observability platform loads the board into are
++    #    display names that contain a space, and no label value admits one, so
++    #    `observability.giantswarm.io/organization` and `.../folder` belong here.
++    #    Rendered by sync/patches/dashboard-annotations, filed upstream as
++    #    agentgateway#3591; both go at the bump to a release that carries it.
++    annotations: {}  # @schema type: object; additionalProperties: true

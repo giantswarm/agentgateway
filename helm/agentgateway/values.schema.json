@@ -370,14 +370,19 @@
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
+                        "annotations": {
+                            "type": "object",
+                            "description": "Annotations on the dashboard ConfigMap. The Grafana organization and folder the Giant Swarm observability platform loads the board into are display names that contain a space, and no label value admits one, so `observability.giantswarm.io/organization` and `.../folder` belong here. Rendered by sync/patches/dashboard-annotations, filed upstream as agentgateway#3591; both go at the bump to a release that carries it.",
+                            "additionalProperties": true
+                        },
                         "enabled": {
                             "type": "boolean",
                             "description": "Create the Grafana dashboard ConfigMap."
                         },
                         "labels": {
                             "type": "object",
-                            "description": "Labels that the Grafana sidecar uses to discover dashboards.",
-                            "additionalProperties": false,
+                            "description": "Labels that the Grafana sidecar uses to discover dashboards. The Giant Swarm observability platform discovers a dashboard ConfigMap by `app.giantswarm.io/kind: dashboard`, which belongs here.",
+                            "additionalProperties": true,
                             "properties": {
                                 "grafana_dashboard": {
                                     "type": "string"
@@ -400,7 +405,7 @@
                         "namespaceSelector": {
                             "type": "object",
                             "description": "Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.",
-                            "additionalProperties": false
+                            "additionalProperties": true
                         },
                         "podMonitor": {
                             "type": "object",
@@ -409,6 +414,13 @@
                                 "enabled": {
                                     "type": "boolean",
                                     "description": "Create a PodMonitor that scrapes provisioned proxy pods on the pod's metrics port (15020) directly, without requiring a metrics port on the provisioned Service."
+                                },
+                                "podTargetLabels": {
+                                    "type": "array",
+                                    "description": "Pod labels copied onto the scraped proxy series. The bundled Grafana dashboard discovers and filters gateways by the gateway name, which reaches the series only through this list. Rendered by sync/patches/podmonitor-labels, a backport of agentgateway#3421; both go at the bump to a release that carries it.",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         }
@@ -424,8 +436,8 @@
                         },
                         "extraLabels": {
                             "type": "object",
-                            "description": "Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).",
-                            "additionalProperties": false
+                            "description": "Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus). The Giant Swarm observability platform routes a series to a Mimir tenant by `observability.giantswarm.io/tenant`, which belongs here.",
+                            "additionalProperties": true
                         },
                         "interval": {
                             "type": "string",

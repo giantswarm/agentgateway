@@ -304,7 +304,9 @@ monitoring:
     # -- Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.
     interval: 15s
     # -- Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).
-    extraLabels: {}
+    #    The Giant Swarm observability platform routes a series to a Mimir tenant
+    #    by `observability.giantswarm.io/tenant`, which belongs here.
+    extraLabels: {}  # @schema type: object; additionalProperties: true
 
   proxy:
     podMonitor:
@@ -312,15 +314,31 @@ monitoring:
       #    metrics port (15020) directly, without requiring a metrics port on the
       #    provisioned Service.
       enabled: true
+      # -- Pod labels copied onto the scraped proxy series. The bundled Grafana
+      #    dashboard discovers and filters gateways by the gateway name, which
+      #    reaches the series only through this list.
+      #    Rendered by sync/patches/podmonitor-labels, a backport of
+      #    agentgateway#3421; both go at the bump to a release that carries it.
+      podTargetLabels:  # @schema item: string
+        - gateway.networking.k8s.io/gateway-name
     # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
     gatewayClassNames:
       - agentgateway
     # -- Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.
-    namespaceSelector: {}
+    namespaceSelector: {}  # @schema type: object; additionalProperties: true
 
   grafanaDashboard:
     # -- Create the Grafana dashboard ConfigMap.
     enabled: true
-    # -- Labels that the Grafana sidecar uses to discover dashboards.
-    labels:
+    # -- Labels that the Grafana sidecar uses to discover dashboards. The Giant
+    #    Swarm observability platform discovers a dashboard ConfigMap by
+    #    `app.giantswarm.io/kind: dashboard`, which belongs here.
+    labels:  # @schema type: object; additionalProperties: true
       grafana_dashboard: "1"
+    # -- Annotations on the dashboard ConfigMap. The Grafana organization and
+    #    folder the Giant Swarm observability platform loads the board into are
+    #    display names that contain a space, and no label value admits one, so
+    #    `observability.giantswarm.io/organization` and `.../folder` belong here.
+    #    Rendered by sync/patches/dashboard-annotations, filed upstream as
+    #    agentgateway#3591; both go at the bump to a release that carries it.
+    annotations: {}  # @schema type: object; additionalProperties: true
