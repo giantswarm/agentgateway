@@ -35,6 +35,8 @@ vendir sync
 ./sync/normalize.py vendor helm sync
 
 ./sync/patches/values/patch.sh
+./sync/patches/podmonitor-labels/patch.sh
+./sync/patches/dashboard-annotations/patch.sh
 ./sync/patches/chart-label/patch.sh
 ./sync/patches/image-tag/patch.sh
 ./sync/patches/team-label/patch.sh
