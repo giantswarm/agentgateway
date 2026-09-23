@@ -94,7 +94,7 @@ controller:
     # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
     # upstream's own build.
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-    tag: 2.1.1
+    tag: 2.1.2
   # -- Configure the controller service.
   service:
     # -- Create the controller Service.
@@ -227,7 +227,7 @@ proxy:
     # -- Set the default image tag: the same release of the Giant Swarm line
     # of agentgateway as the controller.
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-    tag: 2.1.1
+    tag: 2.1.2
 
 # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
 image:
