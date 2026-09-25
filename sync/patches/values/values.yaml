@@ -94,7 +94,7 @@ controller:
     # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
     # upstream's own build.
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-    tag: 2.1.2
+    tag: 2.2.1
   # -- Configure the controller service.
   service:
     # -- Create the controller Service.
