@@ -20,3 +20,8 @@ update-deps: sync
 .PHONY: verify-sync
 verify-sync: ## Fail when the tree does not match what sync/sync.sh produces.
 	./sync/verify.sh
+
+.PHONY: verify-images
+verify-images: ## Fail when an image the chart's rendered defaults run (the controller, the proxy it creates) is not published on gsoci.azurecr.io. Needs PyYAML and network; HELM selects the binary.
+	@python3 -c 'import yaml' 2>/dev/null || { echo "FAIL: PyYAML is not installed (apt: python3-yaml, pip: pyyaml)"; exit 1; }
+	@python3 tests/verify-images.py helm/agentgateway

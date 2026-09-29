@@ -1,0 +1,35 @@
+# Repo-owned, not devctl-generated.
+#
+# The chart once pinned an image tag nobody had published
+# (giantswarm/agentgateway#55), and a fresh install waited on ImagePullBackOff
+# until the release timed out. `make verify-images` renders the chart's defaults
+# and looks up every image it runs (the controller, and the proxy image the
+# controller creates proxies from) on gsoci.azurecr.io. It runs on every PR that
+# touches the chart, so a Renovate or sync PR that pins an unpublished tag
+# fails, and again on the release tag.
+name: Verify images
+
+on:
+  pull_request:
+    paths:
+      - 'helm/**'
+      - 'tests/verify-images.py'
+      - 'Makefile.custom.mk'
+      - '.github/workflows/verify-images.yaml'
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+      - run: python3 -c 'import yaml' 2>/dev/null || sudo apt-get install -y python3-yaml
+      - run: make verify-images
