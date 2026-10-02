@@ -1,5 +1,5 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index f089fc3..2227f4b 100644
+index afd4143..f084ef7 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
 @@ -19,7 +19,6 @@ serviceAccount:
@@ -95,11 +95,11 @@ index f089fc3..2227f4b 100644
 +    # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
 +    # upstream's own build.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
++    tag: 2.2.1
    # -- Configure the controller service.
    service:
      # -- Create the controller Service.
-@@ -207,16 +220,19 @@ proxy:
+@@ -207,37 +220,35 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.
@@ -115,7 +115,7 @@ index f089fc3..2227f4b 100644
 +    # -- Set the default image tag: the same release of the Giant Swarm line
 +    # of agentgateway as the controller.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
++    tag: 2.2.1
 
  # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
  image:
@@ -125,30 +125,88 @@ index f089fc3..2227f4b 100644
    # -- Set the default image tag.
    tag: ""
    # -- Set the default image pull policy.
-@@ -296,6 +312,13 @@ monitoring:
+   pullPolicy: IfNotPresent
+
+-# -- Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/documentation/inference/
++# -- Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/
+ inferenceExtension:
+   # -- Enable Inference Extension support in the agentgateway controller.
+   enabled: false
+
+-# -- Configure the AgentgatewayModel API.
++# -- Configure the experimental AgentgatewayModel API.
+ agentgatewayModels:
+   # -- Enable AgentgatewayModel support in the agentgateway controller.
+-  enabled: true
+-
+-# -- Configure the experimental Gateway API XBackend resource.
+-xBackend:
+-  # -- Enable XBackend support in the agentgateway controller.
+   enabled: false
+
+-# -- List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/documentation/install/advanced/#namespace-discovery.
++# -- List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/install/advanced/#namespace-discovery.
+ discoveryNamespaceSelectors: []
+
+ # -- Map of GatewayClass names to GatewayParameters references that will be set on
+@@ -263,10 +274,6 @@ controllerName: ""
+
+ # -- Control-plane-wide Istio mesh defaults.
+ istio:
+-  # -- Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources.
+-  #    Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it
+-  #    does not disable Istio integration in the controller.
+-  enabled: true
+   # -- Enable Istio integration by default on all built-in-class gateways.
+   #    When false (default), gateways opt in via AgentgatewayParameters spec.istio;
+   #    when true, individual gateways can opt out via spec.istio.enabled=false.
+@@ -297,7 +304,9 @@ monitoring:
+     # -- Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.
+     interval: 15s
+     # -- Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).
+-    extraLabels: {}
++    #    The Giant Swarm observability platform routes a series to a Mimir tenant
++    #    by `observability.giantswarm.io/tenant`, which belongs here.
++    extraLabels: {}  # @schema type: object; additionalProperties: true
+
+   proxy:
+     podMonitor:
+@@ -305,24 +314,31 @@ monitoring:
        #    metrics port (15020) directly, without requiring a metrics port on the
        #    provisioned Service.
        enabled: true
+-      # -- Pod labels copied onto scraped proxy metrics. The gateway name is required
+-      #    by the bundled Grafana dashboard for gateway discovery and filtering.
+-      podTargetLabels:
 +      # -- Pod labels copied onto the scraped proxy series. The bundled Grafana
 +      #    dashboard discovers and filters gateways by the gateway name, which
 +      #    reaches the series only through this list.
 +      #    Rendered by sync/patches/podmonitor-labels, a backport of
 +      #    agentgateway#3421; both go at the bump to a release that carries it.
 +      podTargetLabels:  # @schema item: string
-+        - gateway.networking.k8s.io/gateway-name
+         - gateway.networking.k8s.io/gateway-name
      # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
      gatewayClassNames:
        - agentgateway
-@@ -305,6 +328,15 @@ monitoring:
+     # -- Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.
+-    namespaceSelector: {}
++    namespaceSelector: {}  # @schema type: object; additionalProperties: true
+
    grafanaDashboard:
      # -- Create the Grafana dashboard ConfigMap.
      enabled: true
 -    # -- Labels that the Grafana sidecar uses to discover dashboards.
+-    labels:
 +    # -- Labels that the Grafana sidecar uses to discover dashboards. The Giant
 +    #    Swarm observability platform discovers a dashboard ConfigMap by
 +    #    `app.giantswarm.io/kind: dashboard`, which belongs here.
-     labels:
++    labels:  # @schema type: object; additionalProperties: true
        grafana_dashboard: "1"
+-    # -- Annotations on the dashboard ConfigMap. Provisioners that place a dashboard
+-    #    by display name read the folder, and sometimes the organization, from an
+-    #    annotation rather than a label, because a label value admits no spaces
+-    #    (e.g. grafana_folder: "Platform gateways").
+-    annotations: {}
 +    # -- Annotations on the dashboard ConfigMap. The Grafana organization and
 +    #    folder the Giant Swarm observability platform loads the board into are
 +    #    display names that contain a space, and no label value admits one, so
