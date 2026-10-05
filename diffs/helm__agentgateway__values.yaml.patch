@@ -1,17 +1,13 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index f089fc3..2227f4b 100644
+index afd4143..260bc48 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
-@@ -19,7 +19,6 @@ serviceAccount:
-   # -- Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.
-   name: ""
+@@ -26,48 +26,62 @@ rbac:
+   gatewayNamespaces: []
 
--# -- Configure the RBAC permissions created for the controller.
- rbac:
-   # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
-   # Restricting this list means only Gateways in these namespaces can be used.
-@@ -29,23 +28,37 @@ rbac:
- deploymentAnnotations: {}
+ # -- Add annotations to the agentgateway deployment.
+-deploymentAnnotations: {}
++deploymentAnnotations: {}  # @schema type: object; additionalProperties: true
 
  # -- Add annotations to the agentgateway pods.
 -podAnnotations:
@@ -20,7 +16,8 @@ index f089fc3..2227f4b 100644
 +  application.giantswarm.io/team: bumblebee
 
  # -- Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).
- podLabels: {}
+-podLabels: {}
++podLabels: {}  # @schema type: object; additionalProperties: true
 
  # -- Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000.
 -podSecurityContext: {}
@@ -52,27 +49,34 @@ index f089fc3..2227f4b 100644
 +    memory: 512Mi
 
  # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
- nodeSelector: {}
-@@ -56,18 +69,10 @@ tolerations: []
- # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
- affinity: {}
+-nodeSelector: {}
++nodeSelector: {}  # @schema type: object; additionalProperties: true
 
--# -- Configure how controller pods are spread across topology domains, such as nodes or zones.
--topologySpreadConstraints: []
--
--# -- Set the pod DNS configuration, such as 'options: [{name: ndots, value: "3"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.
+ # -- Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.
+ tolerations: []
+
+ # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
+-affinity: {}
++affinity: {}  # @schema type: object; additionalProperties: true
+
+ # -- Configure how controller pods are spread across topology domains, such as nodes or zones.
+ topologySpreadConstraints: []
+
+ # -- Set the pod DNS configuration, such as 'options: [{name: ndots, value: "3"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.
 -dnsConfig: {}
--
++dnsConfig: {}  # @schema type: object; additionalProperties: true
+
  # -- Configure the agentgateway control plane deployment.
  controller:
    # -- Set the number of controller pod replicas.
    replicaCount: 1
--  # -- Set the number of old ReplicaSets the controller deployment retains for rollback. Leave unset to use the Kubernetes default of 10. '0' is honored and keeps no history.
+   # -- Set the number of old ReplicaSets the controller deployment retains for rollback. Leave unset to use the Kubernetes default of 10. '0' is honored and keeps no history.
 -  revisionHistoryLimit:
++  revisionHistoryLimit:  # @schema type: [integer, null]; minimum: 0
    # -- Set the priority class name for the controller pod.
    priorityClassName: ""
    # -- Set the log level for the controller.
-@@ -75,13 +80,21 @@ controller:
+@@ -75,13 +89,21 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
@@ -95,11 +99,11 @@ index f089fc3..2227f4b 100644
 +    # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
 +    # upstream's own build.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
++    tag: 2.3.0
    # -- Configure the controller service.
    service:
      # -- Create the controller Service.
-@@ -207,16 +220,19 @@ proxy:
+@@ -207,16 +229,19 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.
@@ -115,7 +119,7 @@ index f089fc3..2227f4b 100644
 +    # -- Set the default image tag: the same release of the Giant Swarm line
 +    # of agentgateway as the controller.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-+    tag: 2.0.0
++    tag: 2.3.0
 
  # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
  image:
@@ -125,34 +129,53 @@ index f089fc3..2227f4b 100644
    # -- Set the default image tag.
    tag: ""
    # -- Set the default image pull policy.
-@@ -296,6 +312,13 @@ monitoring:
+@@ -297,7 +322,9 @@ monitoring:
+     # -- Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.
+     interval: 15s
+     # -- Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).
+-    extraLabels: {}
++    #    The Giant Swarm observability platform routes a series to a Mimir tenant
++    #    by `observability.giantswarm.io/tenant`, which belongs here.
++    extraLabels: {}  # @schema type: object; additionalProperties: true
+
+   proxy:
+     podMonitor:
+@@ -305,24 +332,27 @@ monitoring:
        #    metrics port (15020) directly, without requiring a metrics port on the
        #    provisioned Service.
        enabled: true
+-      # -- Pod labels copied onto scraped proxy metrics. The gateway name is required
+-      #    by the bundled Grafana dashboard for gateway discovery and filtering.
+-      podTargetLabels:
 +      # -- Pod labels copied onto the scraped proxy series. The bundled Grafana
 +      #    dashboard discovers and filters gateways by the gateway name, which
 +      #    reaches the series only through this list.
-+      #    Rendered by sync/patches/podmonitor-labels, a backport of
-+      #    agentgateway#3421; both go at the bump to a release that carries it.
 +      podTargetLabels:  # @schema item: string
-+        - gateway.networking.k8s.io/gateway-name
+         - gateway.networking.k8s.io/gateway-name
      # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
      gatewayClassNames:
        - agentgateway
-@@ -305,6 +328,15 @@ monitoring:
+     # -- Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.
+-    namespaceSelector: {}
++    namespaceSelector: {}  # @schema type: object; additionalProperties: true
+
    grafanaDashboard:
      # -- Create the Grafana dashboard ConfigMap.
      enabled: true
 -    # -- Labels that the Grafana sidecar uses to discover dashboards.
+-    labels:
 +    # -- Labels that the Grafana sidecar uses to discover dashboards. The Giant
 +    #    Swarm observability platform discovers a dashboard ConfigMap by
 +    #    `app.giantswarm.io/kind: dashboard`, which belongs here.
-     labels:
++    labels:  # @schema type: object; additionalProperties: true
        grafana_dashboard: "1"
+-    # -- Annotations on the dashboard ConfigMap. Provisioners that place a dashboard
+-    #    by display name read the folder, and sometimes the organization, from an
+-    #    annotation rather than a label, because a label value admits no spaces
+-    #    (e.g. grafana_folder: "Platform gateways").
+-    annotations: {}
 +    # -- Annotations on the dashboard ConfigMap. The Grafana organization and
 +    #    folder the Giant Swarm observability platform loads the board into are
 +    #    display names that contain a space, and no label value admits one, so
 +    #    `observability.giantswarm.io/organization` and `.../folder` belong here.
-+    #    Rendered by sync/patches/dashboard-annotations, filed upstream as
-+    #    agentgateway#3591; both go at the bump to a release that carries it.
 +    annotations: {}  # @schema type: object; additionalProperties: true
