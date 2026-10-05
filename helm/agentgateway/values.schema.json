@@ -6,11 +6,11 @@
         "affinity": {
             "type": "object",
             "description": "Set affinity rules for pod scheduling, such as 'nodeAffinity:'.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "agentgatewayModels": {
             "type": "object",
-            "description": "Configure the experimental AgentgatewayModel API.",
+            "description": "Configure the AgentgatewayModel API.",
             "additionalProperties": false,
             "properties": {
                 "enabled": {
@@ -121,6 +121,14 @@
                 "replicaCount": {
                     "type": "integer",
                     "description": "Set the number of controller pod replicas."
+                },
+                "revisionHistoryLimit": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Set the number of old ReplicaSets the controller deployment retains for rollback. Leave unset to use the Kubernetes default of 10. '0' is honored and keeps no history.",
+                    "minimum": 0
                 },
                 "service": {
                     "type": "object",
@@ -262,11 +270,16 @@
         "deploymentAnnotations": {
             "type": "object",
             "description": "Add annotations to the agentgateway deployment.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "discoveryNamespaceSelectors": {
             "type": "array",
-            "description": "List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/install/advanced/#namespace-discovery."
+            "description": "List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/documentation/install/advanced/#namespace-discovery."
+        },
+        "dnsConfig": {
+            "type": "object",
+            "description": "Set the pod DNS configuration, such as 'options: [{name: ndots, value: \"3\"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.",
+            "additionalProperties": true
         },
         "fullnameOverride": {
             "type": "string",
@@ -317,7 +330,7 @@
         },
         "inferenceExtension": {
             "type": "object",
-            "description": "Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/",
+            "description": "Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/documentation/inference/",
             "additionalProperties": false,
             "properties": {
                 "enabled": {
@@ -342,6 +355,10 @@
                 "clusterId": {
                     "type": "string",
                     "description": "Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways."
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources. Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it does not disable Istio integration in the controller."
                 },
                 "namespace": {
                     "type": "string",
@@ -372,7 +389,7 @@
                     "properties": {
                         "annotations": {
                             "type": "object",
-                            "description": "Annotations on the dashboard ConfigMap. The Grafana organization and folder the Giant Swarm observability platform loads the board into are display names that contain a space, and no label value admits one, so `observability.giantswarm.io/organization` and `.../folder` belong here. Rendered by sync/patches/dashboard-annotations, filed upstream as agentgateway#3591; both go at the bump to a release that carries it.",
+                            "description": "Annotations on the dashboard ConfigMap. The Grafana organization and folder the Giant Swarm observability platform loads the board into are display names that contain a space, and no label value admits one, so `observability.giantswarm.io/organization` and `.../folder` belong here.",
                             "additionalProperties": true
                         },
                         "enabled": {
@@ -417,7 +434,7 @@
                                 },
                                 "podTargetLabels": {
                                     "type": "array",
-                                    "description": "Pod labels copied onto the scraped proxy series. The bundled Grafana dashboard discovers and filters gateways by the gateway name, which reaches the series only through this list. Rendered by sync/patches/podmonitor-labels, a backport of agentgateway#3421; both go at the bump to a release that carries it.",
+                                    "description": "Pod labels copied onto the scraped proxy series. The bundled Grafana dashboard discovers and filters gateways by the gateway name, which reaches the series only through this list.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -454,7 +471,7 @@
         "nodeSelector": {
             "type": "object",
             "description": "Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "podAnnotations": {
             "type": "object",
@@ -472,7 +489,7 @@
         "podLabels": {
             "type": "object",
             "description": "Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).",
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "podSecurityContext": {
             "type": "object",
@@ -523,6 +540,7 @@
         },
         "rbac": {
             "type": "object",
+            "description": "Configure the RBAC permissions created for the controller.",
             "additionalProperties": false,
             "properties": {
                 "gatewayNamespaces": {
@@ -625,6 +643,21 @@
         "tolerations": {
             "type": "array",
             "description": "Set tolerations for pod scheduling, such as 'key: \"nvidia.com/gpu\"'."
+        },
+        "topologySpreadConstraints": {
+            "type": "array",
+            "description": "Configure how controller pods are spread across topology domains, such as nodes or zones."
+        },
+        "xBackend": {
+            "type": "object",
+            "description": "Configure the experimental Gateway API XBackend resource.",
+            "additionalProperties": false,
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Enable XBackend support in the agentgateway controller."
+                }
+            }
         }
     }
 }

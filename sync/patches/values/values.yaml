@@ -19,13 +19,14 @@ serviceAccount:
   # -- Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.
   name: ""
 
+# -- Configure the RBAC permissions created for the controller.
 rbac:
   # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
   # Restricting this list means only Gateways in these namespaces can be used.
   gatewayNamespaces: []
 
 # -- Add annotations to the agentgateway deployment.
-deploymentAnnotations: {}
+deploymentAnnotations: {}  # @schema type: object; additionalProperties: true
 
 # -- Add annotations to the agentgateway pods.
 podAnnotations:  # @schema additionalProperties: true
@@ -33,7 +34,7 @@ podAnnotations:  # @schema additionalProperties: true
   application.giantswarm.io/team: bumblebee
 
 # -- Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters).
-podLabels: {}
+podLabels: {}  # @schema type: object; additionalProperties: true
 
 # -- Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000.
 podSecurityContext:  # @schema additionalProperties: true
@@ -61,18 +62,26 @@ resources:  # @schema additionalProperties: true
     memory: 512Mi
 
 # -- Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.
-nodeSelector: {}
+nodeSelector: {}  # @schema type: object; additionalProperties: true
 
 # -- Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.
 tolerations: []
 
 # -- Set affinity rules for pod scheduling, such as 'nodeAffinity:'.
-affinity: {}
+affinity: {}  # @schema type: object; additionalProperties: true
+
+# -- Configure how controller pods are spread across topology domains, such as nodes or zones.
+topologySpreadConstraints: []
+
+# -- Set the pod DNS configuration, such as 'options: [{name: ndots, value: "3"}]'. Merged with the DNS settings the kubelet derives from the pod's dnsPolicy.
+dnsConfig: {}  # @schema type: object; additionalProperties: true
 
 # -- Configure the agentgateway control plane deployment.
 controller:
   # -- Set the number of controller pod replicas.
   replicaCount: 1
+  # -- Set the number of old ReplicaSets the controller deployment retains for rollback. Leave unset to use the Kubernetes default of 10. '0' is honored and keeps no history.
+  revisionHistoryLimit:  # @schema type: [integer, null]; minimum: 0
   # -- Set the priority class name for the controller pod.
   priorityClassName: ""
   # -- Set the log level for the controller.
@@ -94,7 +103,7 @@ controller:
     # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
     # upstream's own build.
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-    tag: 2.2.1
+    tag: 2.3.0
   # -- Configure the controller service.
   service:
     # -- Create the controller Service.
@@ -227,7 +236,7 @@ proxy:
     # -- Set the default image tag: the same release of the Giant Swarm line
     # of agentgateway as the controller.
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-    tag: 2.2.1
+    tag: 2.3.0
 
 # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
 image:
@@ -238,17 +247,22 @@ image:
   # -- Set the default image pull policy.
   pullPolicy: IfNotPresent
 
-# -- Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/
+# -- Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/documentation/inference/
 inferenceExtension:
   # -- Enable Inference Extension support in the agentgateway controller.
   enabled: false
 
-# -- Configure the experimental AgentgatewayModel API.
+# -- Configure the AgentgatewayModel API.
 agentgatewayModels:
   # -- Enable AgentgatewayModel support in the agentgateway controller.
+  enabled: true
+
+# -- Configure the experimental Gateway API XBackend resource.
+xBackend:
+  # -- Enable XBackend support in the agentgateway controller.
   enabled: false
 
-# -- List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/install/advanced/#namespace-discovery.
+# -- List of namespace selectors (OR'ed): each entry can use 'matchLabels' or 'matchExpressions' (AND'ed within each entry if used together). Agentgateway includes the selected namespaces in config discovery. For more information, see the docs https://agentgateway.dev/docs/kubernetes/latest/documentation/install/advanced/#namespace-discovery.
 discoveryNamespaceSelectors: []
 
 # -- Map of GatewayClass names to GatewayParameters references that will be set on
@@ -274,6 +288,10 @@ controllerName: ""
 
 # -- Control-plane-wide Istio mesh defaults.
 istio:
+  # -- Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources.
+  #    Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it
+  #    does not disable Istio integration in the controller.
+  enabled: true
   # -- Enable Istio integration by default on all built-in-class gateways.
   #    When false (default), gateways opt in via AgentgatewayParameters spec.istio;
   #    when true, individual gateways can opt out via spec.istio.enabled=false.
@@ -317,8 +335,6 @@ monitoring:
       # -- Pod labels copied onto the scraped proxy series. The bundled Grafana
       #    dashboard discovers and filters gateways by the gateway name, which
       #    reaches the series only through this list.
-      #    Rendered by sync/patches/podmonitor-labels, a backport of
-      #    agentgateway#3421; both go at the bump to a release that carries it.
       podTargetLabels:  # @schema item: string
         - gateway.networking.k8s.io/gateway-name
     # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
@@ -339,6 +355,4 @@ monitoring:
     #    folder the Giant Swarm observability platform loads the board into are
     #    display names that contain a space, and no label value admits one, so
     #    `observability.giantswarm.io/organization` and `.../folder` belong here.
-    #    Rendered by sync/patches/dashboard-annotations, filed upstream as
-    #    agentgateway#3591; both go at the bump to a release that carries it.
     annotations: {}  # @schema type: object; additionalProperties: true
