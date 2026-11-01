@@ -1,8 +1,14 @@
 diff --git a/vendor/agentgateway/values.yaml b/helm/agentgateway/values.yaml
-index afd4143..260bc48 100644
+index f87641f..4cefc42 100644
 --- a/vendor/agentgateway/values.yaml
 +++ b/helm/agentgateway/values.yaml
-@@ -26,48 +26,62 @@ rbac:
+@@ -21,54 +21,67 @@ serviceAccount:
+
+ # -- Configure the RBAC permissions created for the controller.
+ rbac:
+-  create: true
+   # -- Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected.
+   # Restricting this list means only Gateways in these namespaces can be used.
    gatewayNamespaces: []
 
  # -- Add annotations to the agentgateway deployment.
@@ -76,7 +82,7 @@ index afd4143..260bc48 100644
    # -- Set the priority class name for the controller pod.
    priorityClassName: ""
    # -- Set the log level for the controller.
-@@ -75,13 +89,21 @@ controller:
+@@ -76,13 +89,21 @@ controller:
    # -- Configure the controller container image.
    image:
      # -- Set the image registry for the controller.
@@ -99,11 +105,20 @@ index afd4143..260bc48 100644
 +    # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
 +    # upstream's own build.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
-+    tag: 2.3.0
++    tag: 2.6.10
    # -- Configure the controller service.
    service:
      # -- Create the controller Service.
-@@ -207,16 +229,19 @@ proxy:
+@@ -146,8 +167,6 @@ controller:
+   extraEnv: {}
+   # -- Add extra sidecar containers to the controller pod.
+   extraContainers: []
+-  # -- Add extra init containers to the controller pod.
+-  extraInitContainers: []
+   # -- Add extra volume mounts to the controller container.
+   extraVolumeMounts: []
+   # -- Add extra volumes to the controller pod.
+@@ -210,16 +229,19 @@ proxy:
    image:
      # -- Set the default image registry.
      # Set to override the global value.
@@ -119,7 +134,7 @@ index afd4143..260bc48 100644
 +    # -- Set the default image tag: the same release of the Giant Swarm line
 +    # of agentgateway as the controller.
 +    # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
-+    tag: 2.3.0
++    tag: 2.6.10
 
  # -- Configure the default container image for the components that Helm deploys. You can override these settings for each particular component in that component's section, such as 'controller.image' for the agentgateway control plane. If you use your own private registry, make sure to include the imagePullSecrets.
  image:
@@ -129,18 +144,28 @@ index afd4143..260bc48 100644
    # -- Set the default image tag.
    tag: ""
    # -- Set the default image pull policy.
-@@ -297,7 +322,9 @@ monitoring:
+@@ -300,17 +322,9 @@ monitoring:
      # -- Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.
      interval: 15s
      # -- Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).
 -    extraLabels: {}
+-      # -- Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.
+-    scrapeNativeHistograms: false
+-      # -- Scrape classic (legacy bucket) histograms.
+-    scrapeClassicHistograms: true
+-    # -- Relabeling rules applied to the scrape target before metrics are ingested.
+-    #    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).
+-    relabelings: []
+-    # -- Relabeling rules applied to scraped metrics before ingestion.
+-    #    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).
+-    metricRelabelings: []
 +    #    The Giant Swarm observability platform routes a series to a Mimir tenant
 +    #    by `observability.giantswarm.io/tenant`, which belongs here.
 +    extraLabels: {}  # @schema type: object; additionalProperties: true
 
    proxy:
      podMonitor:
-@@ -305,24 +332,27 @@ monitoring:
+@@ -318,34 +332,27 @@ monitoring:
        #    metrics port (15020) directly, without requiring a metrics port on the
        #    provisioned Service.
        enabled: true
@@ -152,6 +177,16 @@ index afd4143..260bc48 100644
 +      #    reaches the series only through this list.
 +      podTargetLabels:  # @schema item: string
          - gateway.networking.k8s.io/gateway-name
+-      # -- Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.
+-      scrapeNativeHistograms: false
+-      # -- Scrape classic (legacy bucket) histograms.
+-      scrapeClassicHistograms: true
+-      # -- Relabeling rules applied to the scrape target before metrics are ingested.
+-      #    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).
+-      relabelings: []
+-      # -- Relabeling rules applied to scraped metrics before ingestion.
+-      #    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).
+-      metricRelabelings: []
      # -- GatewayClass names whose proxy pods are selected by the proxy PodMonitor.
      gatewayClassNames:
        - agentgateway
