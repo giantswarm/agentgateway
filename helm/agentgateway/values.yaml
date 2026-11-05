@@ -77,6 +77,7 @@ topologySpreadConstraints: []
 dnsConfig: {}  # @schema type: object; additionalProperties: true
 
 # -- Configure the agentgateway control plane deployment.
+# @default -- see the keys below
 controller:
   # -- Set the number of controller pod replicas.
   replicaCount: 1
@@ -87,6 +88,7 @@ controller:
   # -- Set the log level for the controller.
   logLevel: info
   # -- Configure the controller container image.
+  # @default -- see the keys below
   image:
     # -- Set the image registry for the controller.
     registry: gsoci.azurecr.io
@@ -102,6 +104,7 @@ controller:
     # chart's version (which upstream pin a release carries is documented in
     # the line's FORK.md). Empty would fall back to .Chart.AppVersion,
     # upstream's own build.
+    # @default -- the newest release of the line, kept current by Renovate
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/controller registryUrl=https://gsoci.azurecr.io
     tag: 2.6.10
   # -- Configure the controller service.
@@ -225,6 +228,7 @@ controller:
   verticalPodAutoscaler: {}
 
 # -- Configure the agentgateway data plane deployment.
+# @default -- see the keys below
 proxy:
   image:
     # -- Set the default image registry.
@@ -235,6 +239,7 @@ proxy:
     repository: giantswarm/agentgateway-upstream/agentgateway
     # -- Set the default image tag: the same release of the Giant Swarm line
     # of agentgateway as the controller.
+    # @default -- the newest release of the line, kept current by Renovate
     # renovate: datasource=docker depName=giantswarm/agentgateway-upstream/agentgateway registryUrl=https://gsoci.azurecr.io
     tag: 2.6.10
 

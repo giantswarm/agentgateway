@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- changed: the chart README no longer prints the image tags. `controller.image.tag`, `proxy.image.tag` and the `controller`, `controller.image` and `proxy` objects carry a helm-docs `@default`, so a Renovate tag bump no longer changes the README and fails `pre-commit`.
 - changed: both charts vendor upstream **v1.6.0** (`vendir.yml`), the release the agentgateway line's **2.3.0** is pinned on, and the image defaults move to 2.3.0 (`controller.image.tag`, `proxy.image.tag`) in the same change, so chart, CRDs and images stay one upstream release. The CRDs widen (`AgentgatewayBackend`, `AgentgatewayPolicy`, `AgentgatewayModel`, `AgentgatewayParameters`).
 - changed: `agentgatewayModels.enabled` defaults to `true`, following upstream v1.6.0, which graduated the AgentgatewayModel API; the controller now always receives `AGW_ENABLE_AGENTGATEWAY_MODELS`.
 - added: the upstream v1.6.0 keys `xBackend.enabled` (default `false`, RBAC and controller flag for the experimental Gateway API XBackend), `istio.enabled` (default `true`, gates the Istio discovery RBAC), `controller.revisionHistoryLimit`, `topologySpreadConstraints` and `dnsConfig`, ported into the repo-owned `values.yaml`. Without `xBackend` the v1.6.0 templates failed to render.
