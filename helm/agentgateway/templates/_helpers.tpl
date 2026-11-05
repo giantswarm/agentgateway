@@ -27,7 +27,8 @@ If release name contains chart name it will be used as a full name.
 Create chart name and version as used by the chart label.
 */}}
 {{- define "agentgateway.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- $chart := printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 }}
+{{- regexReplaceAll "[^a-zA-Z0-9]+$" $chart "" }}
 {{- end }}
 
 {{/*
@@ -40,6 +41,7 @@ helm.sh/chart: {{ include "agentgateway.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+application.giantswarm.io/team: {{ index .Chart.Annotations "io.giantswarm.application.team" | quote }}
 {{- with .Values.commonLabels | default dict }}
 {{ toYaml . }}
 {{- end }}
@@ -79,19 +81,11 @@ Supported values: "standard" or "strict" (case-insensitive).
 {{- end }}
 
 {{/*
-Get the image tag with 'v' prefix for semver tags.
-If the input already starts with 'v', return it as-is.
-If the input looks like a semver version (e.g., "1.2.3"), prepend 'v'.
-Otherwise (e.g., "latest", "dev"), return it unchanged.
+Get the image tag as configured. Upstream prepends a 'v' to a bare semver tag
+because its own images carry one; the releases of the Giant Swarm line of
+agentgateway are tagged bare X.Y.Z, so the tag is used as-is
+(sync/patches/image-tag).
 */}}
 {{- define "agentgateway.imageTag" -}}
-{{- $tag := . -}}
-{{- if hasPrefix "v" $tag -}}
-{{- $tag -}}
-{{- else if regexMatch "^[0-9]+\\.[0-9]+\\..*$" $tag -}}
-{{- printf "v%s" $tag -}}
-{{- else -}}
-{{- $tag -}}
-{{- end -}}
+{{- . -}}
 {{- end }}
-
